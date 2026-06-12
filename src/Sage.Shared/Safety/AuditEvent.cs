@@ -37,4 +37,22 @@ public sealed record AuditEvent(DateTimeOffset Timestamp, string EventType, IRea
                 ["argv"] = arguments,
                 ["allowed"] = false,
             });
+
+    /// <summary>
+    /// A <c>cloud.request</c> event for a call to a cloud inference backend.
+    /// Deliberately carries no prompt or response content (docs/security.md):
+    /// only the backend, model, token counts, and duration.
+    /// </summary>
+    public static AuditEvent CloudRequest(string backend, string model, int inputTokens, int outputTokens, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "cloud.request",
+            new Dictionary<string, object?>
+            {
+                ["backend"] = backend,
+                ["model"] = model,
+                ["inputTokens"] = inputTokens,
+                ["outputTokens"] = outputTokens,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
 }
