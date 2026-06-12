@@ -59,6 +59,9 @@ backend, and a minimal overlay window.
 ./scripts/verify.sh      # canonical build + test + format check
 ```
 
+To run the daemon, including as a systemd user service, see
+[docs/running.md](docs/running.md).
+
 ## Contributing
 
 One issue per branch; PRs run `./scripts/verify.sh` in CI. Read
