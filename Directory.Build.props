@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <!-- Allow running on a newer installed runtime when no 9.0 runtime is present
+         (dev machines may only have .NET 10); CI installs 9.0 and uses it as-is. -->
+    <RollForward>Major</RollForward>
+  </PropertyGroup>
+</Project>
