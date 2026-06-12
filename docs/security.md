@@ -20,11 +20,11 @@ the safety layer that every system action must pass through.
 ## Safety layer (central shell-execution gateway)
 
 **All shell execution goes through this one abstraction.** It is built before any
-tool that shells out (roadmap M1 step 4), lives next to the MCP tools in
-`Sage.McpServer`, and no tool may call `Process.Start` directly — enforced in
-code review and, later, by an analyzer.
+tool that shells out (roadmap M1 step 4), lives in `Sage.Shared.Safety` so the
+Daemon and McpServer share one implementation, and no tool may call
+`Process.Start` directly — enforced in code review and, later, by an analyzer.
 
-Design (interface lives in `Sage.Shared`):
+Design (interface and implementation live in `Sage.Shared`):
 
 ```csharp
 public interface ISafeExecutor
