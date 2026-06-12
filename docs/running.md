@@ -74,3 +74,21 @@ systemctl --user disable --now sage-daemon
 rm ~/.config/systemd/user/sage-daemon.service
 systemctl --user daemon-reload
 ```
+
+## Overlay window
+
+`Sage.Overlay` (ADR-0002) is a minimal GTK4/libadwaita window — a prompt entry
+and a response area — that talks to `org.sage.Sage1` over D-Bus. It has no
+intelligence of its own; it just calls `Ask` and shows the reply.
+
+Requires the GTK4/libadwaita runtime libraries (`libgtk-4-1`,
+`libadwaita-1-0`) and a desktop session (X11 or Wayland).
+
+With the daemon running and registered on the session bus:
+
+```sh
+dotnet run --project src/Sage.Overlay
+```
+
+Type a prompt and press Enter. If the daemon isn't running or no session bus
+is available, the response area shows "Sage is unreachable: ...".
