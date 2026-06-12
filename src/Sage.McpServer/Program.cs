@@ -11,7 +11,7 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
 
 builder.Services.AddSingleton<IAuditLog>(_ => new JsonLinesAuditLog(AuditPaths.DefaultDirectory()));
-builder.Services.AddSingleton(ToolAllowlist.Combine(SystemInfoTool.Allowlist, ProcessesTool.Allowlist, MemoryDiskTool.Allowlist, JournalTool.Allowlist, PackageTool.Allowlist));
+builder.Services.AddSingleton(ToolAllowlist.Combine(SystemInfoTool.Allowlist, ProcessesTool.Allowlist, MemoryDiskTool.Allowlist, JournalTool.Allowlist, PackageTool.Allowlist, ServiceStatusTool.Allowlist));
 builder.Services.AddSingleton<ISafeExecutor, SafeExecutor>();
 
 builder.Services
@@ -21,7 +21,8 @@ builder.Services
     .WithTools<ProcessesTool>()
     .WithTools<MemoryDiskTool>()
     .WithTools<JournalTool>()
-    .WithTools<PackageTool>();
+    .WithTools<PackageTool>()
+    .WithTools<ServiceStatusTool>();
 
 var host = builder.Build();
 await host.RunAsync();
