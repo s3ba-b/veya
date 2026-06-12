@@ -5,12 +5,12 @@ namespace Sage.Daemon;
 /// If no session bus is available (headless), logs a warning and the daemon
 /// continues to run without the D-Bus endpoint.
 /// </summary>
-public sealed class DBusHostedService(IDBusSessionConnector connector, ILogger<DBusHostedService> logger)
+public sealed class DBusHostedService(IDBusSessionConnector connector, Sage1Service sage1Service, ILogger<DBusHostedService> logger)
     : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        var registered = await connector.TryRegisterAsync(new Sage1Service());
+        var registered = await connector.TryRegisterAsync(sage1Service);
         if (!registered)
         {
             logger.LogWarning("Sage daemon running without a D-Bus endpoint (no session bus).");

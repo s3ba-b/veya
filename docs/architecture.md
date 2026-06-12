@@ -18,13 +18,19 @@ is out of scope for now.
 
 ### Model router
 
-Inside the Daemon, the router selects an inference backend per request behind the
-`IInferenceBackend` abstraction:
+Inside the Daemon, `Sage.Daemon.IModelRouter` (implemented by `ModelRouter`)
+selects an inference backend per request behind the `IInferenceBackend`
+abstraction and drives the request/response cycle via `ToolUseLoopRunner`:
 
 - **ClaudeBackend** — Claude API (first implementation). Every cloud call is
   audit-logged and user-visible.
 - **LocalBackend** — Ollama / LLamaSharp (later). Preferred when capable enough
   for the request (local-first).
+
+Milestone 1: `ModelRouter` always uses `ClaudeBackend` and sends no tool
+definitions, so `Ask` returns a plain Claude reply with no tool calls. MCP
+tool discovery/execution (the router learning about and calling McpServer
+tools) is roadmap step 7.
 
 ## Diagram
 

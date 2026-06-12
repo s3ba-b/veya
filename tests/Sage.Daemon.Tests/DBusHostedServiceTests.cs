@@ -11,10 +11,16 @@ public class DBusHostedServiceTests
         public Task<bool> TryRegisterAsync(IDBusObject service) => Task.FromResult(result);
     }
 
+    private sealed class FakeModelRouter : IModelRouter
+    {
+        public Task<string> AskAsync(string prompt, CancellationToken cancellationToken = default) =>
+            Task.FromResult($"Sage received: {prompt}");
+    }
+
     [Fact]
     public async Task StartAsync_WhenSessionBusAvailable_CompletesSuccessfully()
     {
-        var hostedService = new DBusHostedService(new FakeConnector(true), NullLogger<DBusHostedService>.Instance);
+        var hostedService = new DBusHostedService(new FakeConnector(true), new Sage1Service(new FakeModelRouter()), NullLogger<DBusHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
         await hostedService.StopAsync(CancellationToken.None);
@@ -25,7 +31,7 @@ public class DBusHostedServiceTests
     {
         // Hard rule #3: the daemon must keep running headless, just without
         // the D-Bus endpoint.
-        var hostedService = new DBusHostedService(new FakeConnector(false), NullLogger<DBusHostedService>.Instance);
+        var hostedService = new DBusHostedService(new FakeConnector(false), new Sage1Service(new FakeModelRouter()), NullLogger<DBusHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
         await hostedService.StopAsync(CancellationToken.None);

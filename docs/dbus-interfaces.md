@@ -24,12 +24,16 @@ The `1` suffix versions the whole contract: breaking changes ship as
 ```
 Ask(in s prompt, out s reply)
 ```
-**Implemented (stub)**: registered at `/org/sage/Sage1` via Tmds.DBus
-(`Sage.Daemon.Sage1Service`); currently echoes the prompt back
-(`"Sage received: <prompt>"`). Will become the real synchronous single-turn
-entry point, routing the prompt through the model router and tools to return
-the final answer. Planned errors: `org.sage.Sage1.Error.Busy`,
-`org.sage.Sage1.Error.BackendUnavailable`.
+**Implemented**: registered at `/org/sage/Sage1` via Tmds.DBus
+(`Sage.Daemon.Sage1Service`). Routes the prompt through the model router
+(`Sage.Daemon.ModelRouter`, currently always `ClaudeBackend`) and returns the
+model's reply. Milestone 1 sends no tool definitions, so replies never
+involve tool calls yet — MCP tool discovery/execution lands in roadmap step 7.
+If no Anthropic API key is configured, `ClaudeBackend` throws
+`BackendUnavailableException`, which `Sage1Service` currently turns into a
+plain-text error reply; mapping this to a dedicated
+`org.sage.Sage1.Error.BackendUnavailable` D-Bus error name is still planned,
+along with `org.sage.Sage1.Error.Busy`.
 
 If no D-Bus session bus is available (e.g. headless CI), the daemon logs a
 warning and continues running without this endpoint — see
