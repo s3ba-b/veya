@@ -4,10 +4,11 @@ using Sage.Shared.Inference;
 namespace Sage.Daemon;
 
 /// <summary>
-/// Milestone 1 implementation of <see cref="IModelRouter"/>: a single-backend
-/// passthrough to <see cref="IInferenceBackend"/> (always
-/// <see cref="ClaudeBackend"/>), with tools discovered from and executed via
-/// <see cref="IMcpToolGateway"/> (docs/roadmap.md step 7).
+/// Implementation of <see cref="IModelRouter"/>: a passthrough to whichever
+/// <see cref="IInferenceBackend"/> is configured (Milestone 2:
+/// <see cref="FallbackInferenceBackend"/>, local-first with cloud fallback —
+/// docs/architecture.md "Model router"), with tools discovered from and
+/// executed via <see cref="IMcpToolGateway"/> (docs/roadmap.md step 7).
 /// </summary>
 public sealed class ModelRouter(IInferenceBackend backend, IMcpToolGateway toolGateway) : IModelRouter
 {

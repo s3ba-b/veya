@@ -22,16 +22,21 @@ Inside the Daemon, `Sage.Daemon.IModelRouter` (implemented by `ModelRouter`)
 selects an inference backend per request behind the `IInferenceBackend`
 abstraction and drives the request/response cycle via `ToolUseLoopRunner`:
 
-- **ClaudeBackend** — Claude API (first implementation). Every cloud call is
-  audit-logged (`cloud.request`) and user-visible.
+- **ClaudeBackend** — Claude API. Every cloud call is audit-logged
+  (`cloud.request`) and user-visible.
 - **OllamaBackend** (ADR-0004) — a local Ollama server's `/api/chat` HTTP API.
   Every call is audit-logged (`local.request`), but since nothing leaves the
-  machine this does not trigger `CloudUsage`. Intended to be preferred when
-  capable enough for the request (local-first), once the router policy exists.
+  machine this does not trigger `CloudUsage`.
 
-Milestone 1: `ModelRouter` always uses `ClaudeBackend`. The local-vs-cloud
-routing policy and the `CloudUsage`/`ActiveBackend` D-Bus surface
-(docs/dbus-interfaces.md) are a follow-up to ADR-0004. Tool definitions come
+Milestone 2: `IInferenceBackend` is `FallbackInferenceBackend(local: OllamaBackend,
+cloud: ClaudeBackend)` — the local-first policy from docs/security.md
+("Cloud transparency"). Each request tries Ollama first; if it throws
+`BackendUnavailableException` (e.g. Ollama isn't running), the request falls
+back to Claude. `ModelRouter` and `ToolUseLoopRunner` are backend-agnostic and
+unaffected by which backend actually answered. The `CloudUsage`/`ActiveBackend`
+D-Bus surface (docs/dbus-interfaces.md) is a follow-up — in the meantime, the
+`local.request`/`cloud.request` audit log entries record which backend handled
+each call. Tool definitions come
 from `Sage.Daemon.Mcp.IMcpToolGateway` (`McpToolGateway`), which spawns
 `Sage.McpServer` as a child process over stdio (via the `ModelContextProtocol`
 client SDK), discovers its tools on first use, and executes tool calls
