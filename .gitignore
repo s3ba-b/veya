@@ -1,0 +1,28 @@
+# .NET build output
+bin/
+obj/
+artifacts/
+*.binlog
+
+# User-specific / IDE
+*.user
+*.suo
+.vs/
+.idea/
+*.swp
+
+# Test results & coverage
+TestResults/
+coverage/
+*.trx
+*.coverage
+
+# NuGet
+*.nupkg
+*.snupkg
+.nuget/
+
+# Local environment & secrets (API keys live in the keyring, never here)
+.env
+.env.*
+secrets.json

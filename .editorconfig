@@ -1,0 +1,43 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+[*.{yml,yaml,json}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.sh]
+indent_size = 4
+
+[*.cs]
+# Style enforced via `dotnet format` in scripts/verify.sh.
+dotnet_sort_system_directives_first = true
+dotnet_style_qualification_for_field = false:warning
+dotnet_style_qualification_for_property = false:warning
+dotnet_style_qualification_for_method = false:warning
+dotnet_style_require_accessibility_modifiers = always:warning
+dotnet_style_prefer_collection_expression = true:suggestion
+
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+csharp_new_line_before_open_brace = all
+csharp_prefer_braces = true:warning
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_using_directive_placement = outside_namespace:warning
+
+# Naming: interfaces start with I
+dotnet_naming_rule.interfaces_begin_with_i.severity = warning
+dotnet_naming_rule.interfaces_begin_with_i.symbols = interface_symbols
+dotnet_naming_rule.interfaces_begin_with_i.style = prefix_i
+dotnet_naming_symbols.interface_symbols.applicable_kinds = interface
+dotnet_naming_style.prefix_i.required_prefix = I
+dotnet_naming_style.prefix_i.capitalization = pascal_case
