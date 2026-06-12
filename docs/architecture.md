@@ -23,11 +23,15 @@ selects an inference backend per request behind the `IInferenceBackend`
 abstraction and drives the request/response cycle via `ToolUseLoopRunner`:
 
 - **ClaudeBackend** — Claude API (first implementation). Every cloud call is
-  audit-logged and user-visible.
-- **LocalBackend** — Ollama / LLamaSharp (later). Preferred when capable enough
-  for the request (local-first).
+  audit-logged (`cloud.request`) and user-visible.
+- **OllamaBackend** (ADR-0004) — a local Ollama server's `/api/chat` HTTP API.
+  Every call is audit-logged (`local.request`), but since nothing leaves the
+  machine this does not trigger `CloudUsage`. Intended to be preferred when
+  capable enough for the request (local-first), once the router policy exists.
 
-Milestone 1: `ModelRouter` always uses `ClaudeBackend`. Tool definitions come
+Milestone 1: `ModelRouter` always uses `ClaudeBackend`. The local-vs-cloud
+routing policy and the `CloudUsage`/`ActiveBackend` D-Bus surface
+(docs/dbus-interfaces.md) are a follow-up to ADR-0004. Tool definitions come
 from `Sage.Daemon.Mcp.IMcpToolGateway` (`McpToolGateway`), which spawns
 `Sage.McpServer` as a child process over stdio (via the `ModelContextProtocol`
 client SDK), discovers its tools on first use, and executes tool calls
@@ -50,7 +54,7 @@ used for the D-Bus session bus.
 │  Session & context manager ── per-source permissions ── audit log     │
 │  Model router (IInferenceBackend)                                     │
 │     ├── ClaudeBackend ──────────────► Claude API   (cloud, logged)    │
-│     └── LocalBackend  ──────────────► Ollama/LLamaSharp (later)       │
+│     └── OllamaBackend ──────────────► local Ollama (local, logged)    │
 └───────────────┬───────────────────────────────────────────────────────┘
                 │  MCP over stdio (child process)
                 ▼

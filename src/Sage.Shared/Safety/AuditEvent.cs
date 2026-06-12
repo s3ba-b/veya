@@ -55,4 +55,23 @@ public sealed record AuditEvent(DateTimeOffset Timestamp, string EventType, IRea
                 ["outputTokens"] = outputTokens,
                 ["durationMs"] = duration.TotalMilliseconds,
             });
+
+    /// <summary>
+    /// A <c>local.request</c> event for a call to a local inference backend.
+    /// Mirrors <see cref="CloudRequest"/>'s fields for observability, but is
+    /// deliberately a distinct event type (docs/security.md): nothing leaves
+    /// the machine, so this does not trigger the <c>CloudUsage</c> signal.
+    /// </summary>
+    public static AuditEvent LocalRequest(string backend, string model, int inputTokens, int outputTokens, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "local.request",
+            new Dictionary<string, object?>
+            {
+                ["backend"] = backend,
+                ["model"] = model,
+                ["inputTokens"] = inputTokens,
+                ["outputTokens"] = outputTokens,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
 }

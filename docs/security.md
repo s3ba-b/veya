@@ -55,7 +55,9 @@ events through the same logging sink.
   `~/.local/state/sage/audit/`), rotated by size.
 - Event types: `tool.exec` (safety layer), `tool.read` (direct reads),
   `cloud.request` (backend, model, byte counts — never the prompt content
-  itself unless the user opts in), `permission.decision`.
+  itself unless the user opts in), `local.request` (same shape as
+  `cloud.request`, written by `OllamaBackend`, ADR-0004; nothing leaves the
+  machine so this does not trigger `CloudUsage`), `permission.decision`.
 - Readable by the user, surfaced in the UI later; the `CloudUsage` and
   `ToolExecuted` D-Bus signals (docs/dbus-interfaces.md) mirror it live.
 
