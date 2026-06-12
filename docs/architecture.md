@@ -27,10 +27,14 @@ abstraction and drives the request/response cycle via `ToolUseLoopRunner`:
 - **LocalBackend** — Ollama / LLamaSharp (later). Preferred when capable enough
   for the request (local-first).
 
-Milestone 1: `ModelRouter` always uses `ClaudeBackend` and sends no tool
-definitions, so `Ask` returns a plain Claude reply with no tool calls. MCP
-tool discovery/execution (the router learning about and calling McpServer
-tools) is roadmap step 7.
+Milestone 1: `ModelRouter` always uses `ClaudeBackend`. Tool definitions come
+from `Sage.Daemon.Mcp.IMcpToolGateway` (`McpToolGateway`), which spawns
+`Sage.McpServer` as a child process over stdio (via the `ModelContextProtocol`
+client SDK), discovers its tools on first use, and executes tool calls
+requested by the model. If the McpServer process can't be started or reached,
+the gateway logs a warning and returns no tools, so `Ask` falls back to a
+plain-text reply with no tool calls — the same graceful-degradation pattern
+used for the D-Bus session bus.
 
 ## Diagram
 
