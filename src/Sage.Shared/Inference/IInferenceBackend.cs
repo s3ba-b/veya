@@ -2,8 +2,9 @@ namespace Sage.Shared.Inference;
 
 /// <summary>
 /// A source of model completions (docs/architecture.md, "Model router").
-/// <c>ClaudeBackend</c> is the first implementation; <c>LocalBackend</c>
-/// (Ollama/LLamaSharp) arrives in Milestone 2.
+/// <c>ClaudeBackend</c> calls the Claude API; <c>OllamaBackend</c> (ADR-0004)
+/// calls a local Ollama server. The router's local-vs-cloud policy is a
+/// follow-up to Milestone 2.
 /// </summary>
 public interface IInferenceBackend
 {
