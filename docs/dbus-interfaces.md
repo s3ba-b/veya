@@ -26,9 +26,11 @@ Ask(in s prompt, out s reply)
 ```
 **Implemented**: registered at `/org/sage/Sage1` via Tmds.DBus
 (`Sage.Daemon.Sage1Service`). Routes the prompt through the model router
-(`Sage.Daemon.ModelRouter`, currently always `ClaudeBackend`) and returns the
-model's reply. Milestone 1 sends no tool definitions, so replies never
-involve tool calls yet — MCP tool discovery/execution lands in roadmap step 7.
+(`Sage.Daemon.ModelRouter`, currently always `ClaudeBackend`), which sends the
+tools discovered from `Sage.McpServer` (`Sage.Daemon.Mcp.IMcpToolGateway`) and
+drives any resulting tool calls via `ToolUseLoopRunner` before returning the
+model's final reply. If the McpServer process is unavailable, no tools are
+sent and the reply is plain text.
 If no Anthropic API key is configured, `ClaudeBackend` throws
 `BackendUnavailableException`, which `Sage1Service` currently turns into a
 plain-text error reply; mapping this to a dedicated
