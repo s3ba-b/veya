@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Sage.Daemon;
 using Sage.Daemon.Mcp;
 using Sage.Shared.Inference;
@@ -8,8 +9,14 @@ builder.Services.AddSystemd();
 builder.Services.AddSingleton<IDBusSessionConnector, DBusSessionConnector>();
 builder.Services.AddSingleton<IAuditLog>(_ => new JsonLinesAuditLog(AuditPaths.DefaultDirectory()));
 builder.Services.AddSingleton<IApiKeyProvider, EnvironmentApiKeyProvider>();
+builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection("Ollama"));
 builder.Services.AddSingleton<IInferenceBackend>(sp =>
-    new ClaudeBackend(sp.GetRequiredService<IApiKeyProvider>(), sp.GetRequiredService<IAuditLog>(), "claude-sonnet-4-6"));
+{
+    var auditLog = sp.GetRequiredService<IAuditLog>();
+    var local = new OllamaBackend(new HttpClient(), auditLog, sp.GetRequiredService<IOptions<OllamaOptions>>().Value);
+    var cloud = new ClaudeBackend(sp.GetRequiredService<IApiKeyProvider>(), auditLog, "claude-sonnet-4-6");
+    return new FallbackInferenceBackend(local, cloud);
+});
 builder.Services.Configure<McpServerOptions>(builder.Configuration.GetSection("Mcp"));
 builder.Services.AddSingleton<IMcpToolGateway, McpToolGateway>();
 builder.Services.AddSingleton<IModelRouter, ModelRouter>();
