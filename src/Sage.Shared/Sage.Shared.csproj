@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <ItemGroup>
+    <PackageReference Include="Anthropic" Version="12.29.0" />
     <PackageReference Include="Tmds.DBus" Version="0.94.1" />
   </ItemGroup>
 </Project>
