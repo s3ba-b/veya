@@ -11,14 +11,15 @@ var builder = Host.CreateApplicationBuilder(args);
 builder.Logging.AddConsole(options => options.LogToStandardErrorThreshold = LogLevel.Trace);
 
 builder.Services.AddSingleton<IAuditLog>(_ => new JsonLinesAuditLog(AuditPaths.DefaultDirectory()));
-builder.Services.AddSingleton(ToolAllowlist.Combine(SystemInfoTool.Allowlist, ProcessesTool.Allowlist));
+builder.Services.AddSingleton(ToolAllowlist.Combine(SystemInfoTool.Allowlist, ProcessesTool.Allowlist, MemoryDiskTool.Allowlist));
 builder.Services.AddSingleton<ISafeExecutor, SafeExecutor>();
 
 builder.Services
     .AddMcpServer()
     .WithStdioServerTransport()
     .WithTools<SystemInfoTool>()
-    .WithTools<ProcessesTool>();
+    .WithTools<ProcessesTool>()
+    .WithTools<MemoryDiskTool>();
 
 var host = builder.Build();
 await host.RunAsync();
