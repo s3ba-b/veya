@@ -1,0 +1,25 @@
+# Sage daemon — systemd user service.
+#
+# Install (development build):
+#   dotnet publish src/Sage.Daemon -c Release -o ~/.local/lib/sage
+#   mkdir -p ~/.config/systemd/user
+#   cp packaging/systemd/sage-daemon.service ~/.config/systemd/user/
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now sage-daemon
+#
+# Logs: journalctl --user -u sage-daemon -f
+#
+# See docs/running.md for details.
+
+[Unit]
+Description=Sage intelligence daemon
+Documentation=https://github.com/s3ba-b/ubuntu-intelligence
+
+[Service]
+Type=notify
+ExecStart=%h/.local/lib/sage/Sage.Daemon
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=default.target
