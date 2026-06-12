@@ -1,0 +1,15 @@
+# Normalize line endings to LF (Linux-first project)
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.cs text
+*.md text
+*.yml text
+*.json text
+
+# Binary
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.woff2 binary
