@@ -14,6 +14,29 @@ Runs in the foreground, logs to the console. Ctrl-C to stop. If a session bus
 is available, it registers `org.sage.Sage1` at `/org/sage/Sage1`; otherwise it
 logs a warning and runs without the D-Bus endpoint.
 
+## MCP tools in development
+
+`Sage.Daemon` discovers tools from `Sage.McpServer` (docs/architecture.md,
+"Model router") by spawning it as a child process over stdio
+(`Sage.Daemon.Mcp.McpToolGateway`). By default it looks for an `Sage.McpServer`
+executable next to its own binary — a layout that only exists after
+`dotnet publish` places both projects side by side (see
+packaging/systemd/sage-daemon.service).
+
+For `dotnet run --project src/Sage.Daemon`, build `Sage.McpServer` separately
+and point the Daemon at it:
+
+```sh
+dotnet build src/Sage.McpServer
+export Mcp__ServerPath=$(pwd)/src/Sage.McpServer/bin/Debug/net9.0/Sage.McpServer
+dotnet run --project src/Sage.Daemon
+```
+
+Without this, `McpToolGateway` logs a warning and continues with zero tools —
+`Ask` still works, but the model has nothing to call and can only answer from
+its own knowledge (it may suggest commands for *you* to run instead of running
+them itself).
+
 ## Try `Ask`
 
 With the daemon running and a session bus available:
