@@ -24,9 +24,16 @@ The `1` suffix versions the whole contract: breaking changes ship as
 ```
 Ask(in s prompt, out s reply)
 ```
-Milestone 1 stub, then the real synchronous single-turn entry point. Routes the
-prompt through the model router and tools and returns the final answer. Errors:
-`org.sage.Sage1.Error.Busy`, `org.sage.Sage1.Error.BackendUnavailable`.
+**Implemented (stub)**: registered at `/org/sage/Sage1` via Tmds.DBus
+(`Sage.Daemon.Sage1Service`); currently echoes the prompt back
+(`"Sage received: <prompt>"`). Will become the real synchronous single-turn
+entry point, routing the prompt through the model router and tools to return
+the final answer. Planned errors: `org.sage.Sage1.Error.Busy`,
+`org.sage.Sage1.Error.BackendUnavailable`.
+
+If no D-Bus session bus is available (e.g. headless CI), the daemon logs a
+warning and continues running without this endpoint — see
+`Sage.Daemon.IDBusSessionConnector`.
 
 ```
 AskSession(in s sessionId, in s prompt, out s reply)        (planned)
