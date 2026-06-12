@@ -1,8 +1,8 @@
 # Running the daemon
 
-Status: the daemon is a skeleton (no D-Bus endpoint yet — see
-docs/roadmap.md and issue tracking the `Ask` stub). This covers running it as
-a systemd **user** service, which is how it will run in normal use.
+Status: the daemon is a skeleton exposing a stub `org.sage.Sage1.Ask` on the
+D-Bus session bus (see docs/dbus-interfaces.md and docs/roadmap.md). This
+covers running it directly, as a systemd user service, and trying `Ask`.
 
 ## Run directly (development)
 
@@ -10,7 +10,22 @@ a systemd **user** service, which is how it will run in normal use.
 dotnet run --project src/Sage.Daemon
 ```
 
-Runs in the foreground, logs to the console. Ctrl-C to stop.
+Runs in the foreground, logs to the console. Ctrl-C to stop. If a session bus
+is available, it registers `org.sage.Sage1` at `/org/sage/Sage1`; otherwise it
+logs a warning and runs without the D-Bus endpoint.
+
+## Try `Ask`
+
+With the daemon running and a session bus available:
+
+```sh
+gdbus call --session --dest org.sage.Sage1 \
+  --object-path /org/sage/Sage1 --method org.sage.Sage1.Ask "hello sage"
+# ('Sage received: hello sage',)
+
+busctl --user call org.sage.Sage1 /org/sage/Sage1 org.sage.Sage1 Ask s "hello sage"
+# s "Sage received: hello sage"
+```
 
 ## Run as a systemd user service
 
