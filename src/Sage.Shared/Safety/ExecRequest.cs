@@ -13,4 +13,13 @@ namespace Sage.Shared.Safety;
 /// e.g. clipboard text passed here stays out of the trail. <c>null</c> leaves
 /// stdin unredirected.
 /// </param>
-public sealed record ExecRequest(string Tool, string Binary, IReadOnlyList<string> Arguments, string? StandardInput = null);
+/// <param name="Detached">
+/// When true, the command is run fire-and-forget: stdout/stderr are not
+/// captured, and the executor waits only a bounded time for the foreground
+/// process to exit, leaving any persistent helper it spawns running. Use this
+/// for tools whose helper is <em>meant</em> to outlive the call (e.g.
+/// <c>wl-copy</c>, which must stay alive to serve the Wayland clipboard) —
+/// capturing their output would hold a pipe open and hang the call. The
+/// default (false) captures output and runs to completion.
+/// </param>
+public sealed record ExecRequest(string Tool, string Binary, IReadOnlyList<string> Arguments, string? StandardInput = null, bool Detached = false);

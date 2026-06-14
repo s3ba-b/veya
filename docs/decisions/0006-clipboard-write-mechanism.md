@@ -61,10 +61,18 @@ returning a message to the model — when not granted.
 - `ExecRequest.StandardInput` and `SafeExecutor` stdin support are general, not
   clipboard-specific; future tools that must keep payloads out of the audit log
   can reuse them.
-- `wl-copy` daemonizes to keep serving the selection after the foreground
-  process exits; verified that it closes its stdio so `SafeExecutor`'s
-  read-to-EOF returns promptly (no spurious timeout). `xclip` on X11 behaves
-  similarly; it is the fallback path and is not exercised on Wayland.
+- **Clipboard ownership is a persistent process by design.** On Wayland the
+  selection is served for as long as the source client lives, so `wl-copy`
+  forks a daemon that outlives the call and re-parents away from our process
+  tree — while keeping the inherited stderr pipe open. Capturing its output and
+  waiting for EOF therefore hangs indefinitely (issue #41). `set_clipboard`
+  consequently runs in **detached mode** (`ExecRequest.Detached`): stdout/stderr
+  are not captured (no pipe for the survivor to hold), stdin is still piped, and
+  `SafeExecutor` waits only a bounded time for the foreground process to exit,
+  leaving the daemon running. `xclip` on X11 has the same persistent-owner shape
+  and uses the same mode.
+- Independently, `SafeExecutor`'s timeout was made hard against this class of
+  bug: a detached descendant can no longer block the post-kill reap (#41).
 - The user must have `wl-clipboard` (Wayland) or `xclip` (X11) installed. A
   missing binary surfaces as a normal failed execution, not a crash.
 - Reading the clipboard (paste) is **not** part of this decision; if added later

@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Sage.Shared.Safety;
 using Xunit;
 
@@ -13,6 +14,23 @@ public class SafeExecutorTests
         {
             Events.Add(auditEvent);
             return Task.CompletedTask;
+        }
+    }
+
+    // Best-effort cleanup of a detached survivor a test intentionally spawned.
+    private static void KillSurvivor(string pattern)
+    {
+        try
+        {
+            var psi = new ProcessStartInfo("/usr/bin/pkill");
+            psi.ArgumentList.Add("-f");
+            psi.ArgumentList.Add(pattern);
+            using var pkill = Process.Start(psi);
+            pkill?.WaitForExit(2000);
+        }
+        catch
+        {
+            // Cleanup is best-effort; the survivor self-terminates anyway.
         }
     }
 
@@ -70,6 +88,67 @@ public class SafeExecutorTests
         var auditEvent = Assert.Single(auditLog.Events);
         Assert.DoesNotContain("secret-content", auditEvent.Fields.Values.Select(v => v?.ToString()));
         Assert.DoesNotContain("secret-content", string.Join("|", auditEvent.Fields.Keys));
+    }
+
+    [Fact]
+    public async Task RunAsync_DetachedDescendantHoldingPipe_DoesNotHangPastTimeout()
+    {
+        // Regression for #41: bash exits immediately but backgrounds a child that
+        // re-parents away from the process tree while still holding the captured
+        // stderr pipe. The old code blocked on WaitForExitAsync for the child's
+        // whole lifetime (observed: minutes); the hard timeout must bound it.
+        // The survivor sleep outlives the call by far; "sleep 31" is the unique
+        // pattern we clean up by (distinct from the 30s used elsewhere).
+        const string pattern = "sleep 31";
+        var allowlist = new Dictionary<string, CommandSpec>
+        {
+            ["bash"] = CommandSpec.AllowAnyArguments("/usr/bin/bash"),
+        };
+        var executor = new SafeExecutor(allowlist, new RecordingAuditLog(), timeout: TimeSpan.FromMilliseconds(300));
+
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            // bash backgrounds the sleep, disowns it (re-parents away from the
+            // tree while still holding the captured stderr pipe), and exits 0.
+            await executor.RunAsync(new ExecRequest("test_tool", "bash", ["-c", "sleep 31 & disown; exit 0"]));
+            stopwatch.Stop();
+
+            Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(10), $"RunAsync took {stopwatch.Elapsed} — it waited on the detached child.");
+        }
+        finally
+        {
+            KillSurvivor(pattern);
+        }
+    }
+
+    [Fact]
+    public async Task RunAsync_Detached_ReturnsPromptlyAndDoesNotCaptureOutput()
+    {
+        // Detached mode (clipboard helpers): a survivor is expected; the call
+        // returns as soon as the foreground process exits, without timing out.
+        const string pattern = "sleep 32";
+        var allowlist = new Dictionary<string, CommandSpec>
+        {
+            ["bash"] = CommandSpec.AllowAnyArguments("/usr/bin/bash"),
+        };
+        var executor = new SafeExecutor(allowlist, new RecordingAuditLog(), timeout: TimeSpan.FromSeconds(5));
+
+        var stopwatch = Stopwatch.StartNew();
+        try
+        {
+            var result = await executor.RunAsync(
+                new ExecRequest("test_tool", "bash", ["-c", "sleep 32 & disown; exit 0"], Detached: true));
+            stopwatch.Stop();
+
+            Assert.False(result.TimedOut);
+            Assert.True(stopwatch.Elapsed < TimeSpan.FromSeconds(5), $"Detached run took {stopwatch.Elapsed}.");
+            Assert.Equal(string.Empty, result.StandardOutput);
+        }
+        finally
+        {
+            KillSurvivor(pattern);
+        }
     }
 
     [Fact]
