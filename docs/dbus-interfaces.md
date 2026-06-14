@@ -15,7 +15,7 @@ shipped surface require an ADR or roadmap note.
 | Activation | systemd user service (`veya-daemon.service`); D-Bus activation considered later |
 
 The `1` suffix versions the whole contract: breaking changes ship as
-`org.veya.Sage2` alongside, never as in-place edits.
+`org.veya.Veya2` alongside, never as in-place edits.
 
 ## Interface `org.veya.Veya1`
 
