@@ -1,6 +1,6 @@
 # Architecture
 
-Sage is a set of cooperating processes in one .NET 9 solution. A central daemon
+Veya is a set of cooperating processes in one .NET 9 solution. A central daemon
 owns all intelligence; frontends are thin clients over D-Bus; system access is
 isolated in an MCP server behind a safety layer.
 
@@ -8,17 +8,17 @@ isolated in an MCP server behind a safety layer.
 
 | Component | Project | Responsibility |
 |---|---|---|
-| **Daemon** | `Sage.Daemon` | Long-running user service (Generic Host + `Microsoft.Extensions.Hosting.Systemd`). Exposes D-Bus interface `org.sage.Sage1` via Tmds.DBus. Owns session/context management, per-source permissions, the audit log, and the model router. |
-| **McpServer** | `Sage.McpServer` | MCP server on the official ModelContextProtocol C# SDK, stdio transport, spawned and owned by the Daemon. Exposes Ubuntu system tools. Phase 1 tools are read-only: system info, processes, memory/disk, journald logs, APT package queries, systemd service status. Milestone 2 adds the first write tool, `set_clipboard`, gated by per-source permissions (ADR-0005) and writing via `wl-copy`/`xclip` (ADR-0006). All shell execution goes through the central safety layer (docs/security.md). |
-| **Shared** | `Sage.Shared` | Common models and contracts shared by Daemon, McpServer, and frontends: request/response records, tool result shapes, audit event types, `IInferenceBackend`. |
-| **Overlay** | `Sage.Overlay` | GTK4/libadwaita overlay window via Gir.Core (ADR-0002). Pure D-Bus client of `org.sage.Sage1` — no intelligence of its own. `OverlayViewModel` sends the prompt via `Sage1Client` and returns the reply or a friendly error if the daemon is unreachable. |
+| **Daemon** | `Veya.Daemon` | Long-running user service (Generic Host + `Microsoft.Extensions.Hosting.Systemd`). Exposes D-Bus interface `org.veya.Veya1` via Tmds.DBus. Owns session/context management, per-source permissions, the audit log, and the model router. |
+| **McpServer** | `Veya.McpServer` | MCP server on the official ModelContextProtocol C# SDK, stdio transport, spawned and owned by the Daemon. Exposes Ubuntu system tools. Phase 1 tools are read-only: system info, processes, memory/disk, journald logs, APT package queries, systemd service status. Milestone 2 adds the first write tool, `set_clipboard`, gated by per-source permissions (ADR-0005) and writing via `wl-copy`/`xclip` (ADR-0006). All shell execution goes through the central safety layer (docs/security.md). |
+| **Shared** | `Veya.Shared` | Common models and contracts shared by Daemon, McpServer, and frontends: request/response records, tool result shapes, audit event types, `IInferenceBackend`. |
+| **Overlay** | `Veya.Overlay` | GTK4/libadwaita overlay window via Gir.Core (ADR-0002). Pure D-Bus client of `org.veya.Veya1` — no intelligence of its own. `OverlayViewModel` sends the prompt via `Veya1Client` and returns the reply or a friendly error if the daemon is unreachable. |
 
 A future GNOME Shell extension shim (JavaScript) is another thin D-Bus client and
 is out of scope for now.
 
 ### Model router
 
-Inside the Daemon, `Sage.Daemon.IModelRouter` (implemented by `ModelRouter`)
+Inside the Daemon, `Veya.Daemon.IModelRouter` (implemented by `ModelRouter`)
 selects an inference backend per request behind the `IInferenceBackend`
 abstraction and drives the request/response cycle via `ToolUseLoopRunner`:
 
@@ -37,8 +37,8 @@ unaffected by which backend actually answered. The `CloudUsage`/`ActiveBackend`
 D-Bus surface (docs/dbus-interfaces.md) is a follow-up — in the meantime, the
 `local.request`/`cloud.request` audit log entries record which backend handled
 each call. Tool definitions come
-from `Sage.Daemon.Mcp.IMcpToolGateway` (`McpToolGateway`), which spawns
-`Sage.McpServer` as a child process over stdio (via the `ModelContextProtocol`
+from `Veya.Daemon.Mcp.IMcpToolGateway` (`McpToolGateway`), which spawns
+`Veya.McpServer` as a child process over stdio (via the `ModelContextProtocol`
 client SDK), discovers its tools on first use, and executes tool calls
 requested by the model. If the McpServer process can't be started or reached,
 the gateway logs a warning and returns no tools, so `Ask` falls back to a
@@ -52,9 +52,9 @@ used for the D-Bus session bus.
 │   Overlay (GTK4/Gir.Core)      GNOME Shell shim (later)      CLI      │
 └───────────────┬───────────────────────┬──────────────────────┬────────┘
                 │            D-Bus session bus                 │
-                │        org.sage.Sage1  /org/sage/Sage1       │
+                │        org.veya.Veya1  /org/veya/Veya1       │
                 ▼                                              ▼
-┌───────────────────────────── Daemon (Sage.Daemon) ────────────────────┐
+┌───────────────────────────── Daemon (Veya.Daemon) ────────────────────┐
 │  D-Bus endpoint (Tmds.DBus)                                           │
 │  Session & context manager ── per-source permissions ── audit log     │
 │  Model router (IInferenceBackend)                                     │
@@ -63,7 +63,7 @@ used for the D-Bus session bus.
 └───────────────┬───────────────────────────────────────────────────────┘
                 │  MCP over stdio (child process)
                 ▼
-┌──────────────────────────── McpServer (Sage.McpServer) ───────────────┐
+┌──────────────────────────── McpServer (Veya.McpServer) ───────────────┐
 │  Read-only tools: system info · processes · memory/disk ·             │
 │                   journald · APT queries · systemd status             │
 │  Write tools:     set_clipboard (permission-gated, ADR-0005/0006)     │
@@ -74,13 +74,13 @@ used for the D-Bus session bus.
         Ubuntu system (unprivileged; polkit for privileged actions, later)
 ```
 
-Both Daemon and McpServer run unprivileged in the user session. `Sage.Shared` is
+Both Daemon and McpServer run unprivileged in the user session. `Veya.Shared` is
 referenced by all of the above.
 
 ## Data flow: "what's eating my RAM?"
 
 1. **Overlay** — the user opens the overlay and types the question. The overlay
-   calls `Ask("what's eating my RAM?")` on `org.sage.Sage1`.
+   calls `Ask("what's eating my RAM?")` on `org.veya.Veya1`.
 2. **D-Bus** — the session bus routes the call to the Daemon, which creates (or
    resumes) a session and appends the query to its context.
 3. **Daemon / router** — the router picks a backend (Claude API in Milestone 1)
@@ -98,8 +98,8 @@ referenced by all of the above.
 ## Source layout
 
 ```
-src/    Sage.Daemon/  Sage.McpServer/  Sage.Shared/  Sage.Overlay/
-tests/  Sage.Daemon.Tests/  Sage.McpServer.Tests/  Sage.Shared.Tests/  Sage.Overlay.Tests/
+src/    Veya.Daemon/  Veya.McpServer/  Veya.Shared/  Veya.Overlay/
+tests/  Veya.Daemon.Tests/  Veya.McpServer.Tests/  Veya.Shared.Tests/  Veya.Overlay.Tests/
 ```
 
 Tests must not assume a desktop session (no session bus, no display); D-Bus and

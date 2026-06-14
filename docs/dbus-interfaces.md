@@ -9,37 +9,37 @@ shipped surface require an ADR or roadmap note.
 | | |
 |---|---|
 | Bus | session bus |
-| Well-known name | `org.sage.Sage1` |
-| Object path | `/org/sage/Sage1` |
-| Interface | `org.sage.Sage1` |
-| Activation | systemd user service (`sage-daemon.service`); D-Bus activation considered later |
+| Well-known name | `org.veya.Veya1` |
+| Object path | `/org/veya/Veya1` |
+| Interface | `org.veya.Veya1` |
+| Activation | systemd user service (`veya-daemon.service`); D-Bus activation considered later |
 
 The `1` suffix versions the whole contract: breaking changes ship as
-`org.sage.Sage2` alongside, never as in-place edits.
+`org.veya.Sage2` alongside, never as in-place edits.
 
-## Interface `org.sage.Sage1`
+## Interface `org.veya.Veya1`
 
 ### Methods
 
 ```
 Ask(in s prompt, out s reply)
 ```
-**Implemented**: registered at `/org/sage/Sage1` via Tmds.DBus
-(`Sage.Daemon.Sage1Service`). Routes the prompt through the model router
-(`Sage.Daemon.ModelRouter`, currently always `ClaudeBackend`), which sends the
-tools discovered from `Sage.McpServer` (`Sage.Daemon.Mcp.IMcpToolGateway`) and
+**Implemented**: registered at `/org/veya/Veya1` via Tmds.DBus
+(`Veya.Daemon.Veya1Service`). Routes the prompt through the model router
+(`Veya.Daemon.ModelRouter`, currently always `ClaudeBackend`), which sends the
+tools discovered from `Veya.McpServer` (`Veya.Daemon.Mcp.IMcpToolGateway`) and
 drives any resulting tool calls via `ToolUseLoopRunner` before returning the
 model's final reply. If the McpServer process is unavailable, no tools are
 sent and the reply is plain text.
 If no Anthropic API key is configured, `ClaudeBackend` throws
-`BackendUnavailableException`, which `Sage1Service` currently turns into a
+`BackendUnavailableException`, which `Veya1Service` currently turns into a
 plain-text error reply; mapping this to a dedicated
-`org.sage.Sage1.Error.BackendUnavailable` D-Bus error name is still planned,
-along with `org.sage.Sage1.Error.Busy`.
+`org.veya.Veya1.Error.BackendUnavailable` D-Bus error name is still planned,
+along with `org.veya.Veya1.Error.Busy`.
 
 If no D-Bus session bus is available (e.g. headless CI), the daemon logs a
 warning and continues running without this endpoint — see
-`Sage.Daemon.IDBusSessionConnector`.
+`Veya.Daemon.IDBusSessionConnector`.
 
 ```
 AskSession(in s sessionId, in s prompt, out s reply)        (planned)
@@ -89,6 +89,6 @@ ActiveBackend    s   read   "claude" | "local"              (planned)
 - Frontends (Overlay, GNOME Shell shim, CLI) are pure clients of this interface;
   no intelligence or system access on the client side.
 - Methods never block on user permission prompts; a denied permission returns an
-  error (`org.sage.Sage1.Error.PermissionDenied`) so UIs can react.
+  error (`org.veya.Veya1.Error.PermissionDenied`) so UIs can react.
 - Tests must not assume a session bus exists; the daemon's D-Bus surface is
   wrapped behind an interface and faked in tests.

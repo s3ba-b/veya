@@ -20,11 +20,11 @@ the safety layer that every system action must pass through.
 ## Safety layer (central shell-execution gateway)
 
 **All shell execution goes through this one abstraction.** It is built before any
-tool that shells out (roadmap M1 step 4), lives in `Sage.Shared.Safety` so the
+tool that shells out (roadmap M1 step 4), lives in `Veya.Shared.Safety` so the
 Daemon and McpServer share one implementation, and no tool may call
 `Process.Start` directly — enforced in code review and, later, by an analyzer.
 
-Design (interface and implementation live in `Sage.Shared`):
+Design (interface and implementation live in `Veya.Shared`):
 
 ```csharp
 public interface ISafeExecutor
@@ -51,8 +51,8 @@ events through the same logging sink.
 
 ## Audit log
 
-- Append-only JSON Lines under `$XDG_STATE_HOME/sage/audit/` (default
-  `~/.local/state/sage/audit/`), rotated by size.
+- Append-only JSON Lines under `$XDG_STATE_HOME/veya/audit/` (default
+  `~/.local/state/veya/audit/`), rotated by size.
 - Event types: `tool.exec` (safety layer), `tool.read` (direct reads),
   `cloud.request` (backend, model, byte counts — never the prompt content
   itself unless the user opts in), `local.request` (same shape as
@@ -60,6 +60,11 @@ events through the same logging sink.
   machine so this does not trigger `CloudUsage`), `permission.decision`.
 - Readable by the user, surfaced in the UI later; the `CloudUsage` and
   `ToolExecuted` D-Bus signals (docs/dbus-interfaces.md) mirror it live.
+- **Upgrading from a pre-rename (Sage) install:** the audit directory moved from
+  `~/.local/state/sage/audit/` to `~/.local/state/veya/audit/` (ADR-0007). There
+  is no automatic migration; older trails are simply not read. To keep history,
+  move them once by hand before first run of the renamed daemon:
+  `mv ~/.local/state/sage ~/.local/state/veya`.
 
 ## Per-source permissions
 
@@ -68,7 +73,7 @@ has an independent permission the user grants per source (and later per app).
 Defaults are deny. Decisions are audit-logged. No source is read "because it was
 convenient"; ingestion and query both check permissions.
 
-Implemented in `Sage.Shared.Permissions` (ADR-0005): `PermissionSource` (the
+Implemented in `Veya.Shared.Permissions` (ADR-0005): `PermissionSource` (the
 sources above), `IPermissionStore` (pure, default-deny grant lookup), and
 `IPermissionGate` — the single checkpoint every gated action passes through,
 which writes a `permission.decision` event for every check. For Milestone 2 the

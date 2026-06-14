@@ -8,7 +8,7 @@ assignees: ''
 
 ## Summary
 
-<!-- One or two sentences: what should Sage do that it doesn't today? -->
+<!-- One or two sentences: what should Veya do that it doesn't today? -->
 
 ## Motivation
 

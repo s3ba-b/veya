@@ -7,7 +7,7 @@
 
 Milestone 2 (docs/roadmap.md) introduces clipboard writing — the first
 non-read-only tool. The Daemon and McpServer are unprivileged user services
-(ADR-0003); there is no GUI process of Sage's own that owns a desktop
+(ADR-0003); there is no GUI process of Veya's own that owns a desktop
 connection. We need a way to put text on the system clipboard from a background
 process, on both Wayland (the default on modern Ubuntu/GNOME) and X11.
 

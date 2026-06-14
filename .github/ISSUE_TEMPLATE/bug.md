@@ -22,7 +22,7 @@ assignees: ''
 
 - Ubuntu version:
 - .NET SDK version (`dotnet --version`):
-- Sage commit/version:
+- Veya commit/version:
 - Desktop session (GNOME/Wayland/X11/headless):
 
 ## Additional context

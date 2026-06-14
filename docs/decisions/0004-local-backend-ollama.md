@@ -15,12 +15,12 @@ Milestone 1). The roadmap names two candidates: **Ollama** and **LLamaSharp**.
   downloads and runtime itself.
 - **LLamaSharp** is a .NET binding to llama.cpp, shipped as NuGet packages with
   large platform- and accelerator-specific native runtime assets (CPU/CUDA/
-  ROCm/Vulkan). Sage would load and run model weights in-process.
+  ROCm/Vulkan). Veya would load and run model weights in-process.
 
 ## Decision
 
 **`OllamaBackend : IInferenceBackend`**, talking to a locally-running Ollama
-over HTTP (`POST /api/chat`, non-streaming), in `Sage.Shared.Inference`.
+over HTTP (`POST /api/chat`, non-streaming), in `Veya.Shared.Inference`.
 
 Reasons:
 
@@ -29,12 +29,12 @@ Reasons:
   injectable for tests) — no native bindings, no bundled runtime assets, no new
   build-time complexity.
 - Ollama already handles model management (pulling, quantization, GPU/CPU
-  placement); Sage does not need to reimplement any of that.
+  placement); Veya does not need to reimplement any of that.
 - LLamaSharp's per-accelerator native packages would significantly complicate
   packaging and CI (hard rule: tests must not assume a desktop session, and
   should stay lightweight/headless). Bundling a model runtime in-process is a
   bigger commitment than an MVP local backend needs.
-- Cost accepted: the user must separately install and run Ollama. Sage detects
+- Cost accepted: the user must separately install and run Ollama. Veya detects
   it being unreachable the same way it detects a missing Claude API key — via
   `BackendUnavailableException`, surfaced as a friendly error.
 

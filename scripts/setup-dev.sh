@@ -3,7 +3,7 @@
 # and tells you so before doing it.
 set -euo pipefail
 
-echo "Sage dev setup — this will use sudo for 'apt-get install' below."
+echo "Veya dev setup — this will use sudo for 'apt-get install' below."
 
 APT_PACKAGES=(
     # .NET 9 SDK (Ubuntu 24.04+ feed; on older releases install via
@@ -12,7 +12,7 @@ APT_PACKAGES=(
     # GTK4/libadwaita headers for the Overlay (later phase, harmless now)
     libgtk-4-dev
     libadwaita-1-dev
-    # D-Bus tooling for poking at org.sage.Sage1 during development
+    # D-Bus tooling for poking at org.veya.Veya1 during development
     d-feet
     dbus-x11
 )

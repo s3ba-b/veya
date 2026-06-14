@@ -5,7 +5,7 @@
 
 ## Context
 
-Some future Sage actions (package installation, service restarts, system config
+Some future Veya actions (package installation, service restarts, system config
 changes) require elevation. An AI-driven system must make elevation rare,
 explicit, and auditable. Options considered: run components as root, sudo
 invocations, a setuid helper, polkit.

@@ -23,7 +23,7 @@ decisions:
 
 ## Decision
 
-A small permission layer in `Sage.Shared.Permissions`:
+A small permission layer in `Veya.Shared.Permissions`:
 
 - **`PermissionSource`** — an enum of the sources named in docs/security.md
   (`Clipboard`, `Files`, `Notifications`, `Screen`, `PersonalIndex`).
@@ -49,10 +49,10 @@ Reasons:
   deny a source you didn't think about.
 - **Config-based grant fits the current surface.** There is no interactive UI to
   drive consent yet (the overlay is a minimal `Ask` window), and adding
-  `Grant`/`Revoke` D-Bus methods now would expand the `org.sage.Sage1` contract
+  `Grant`/`Revoke` D-Bus methods now would expand the `org.veya.Veya1` contract
   before anything can call them. Config is headless-testable (hard rule 3) and
   enough to ship the first write tool safely.
-- **Framework-agnostic core.** `Sage.Shared` deliberately avoids a configuration
+- **Framework-agnostic core.** `Veya.Shared` deliberately avoids a configuration
   dependency, so the store takes a plain grant map; the configuration binding
   lives in the host project that already has `IConfiguration`.
 
@@ -66,7 +66,7 @@ Reasons:
 - Tests fake `IPermissionStore` / `IPermissionGate` and a recording audit log;
   no desktop session or real grant UI is needed.
 - **Deferred** (later milestone, with the overlay/UI): runtime grant/revoke
-  (likely D-Bus on `org.sage.Sage1`), interactive per-action consent, and
+  (likely D-Bus on `org.veya.Veya1`), interactive per-action consent, and
   per-app scoping. This ADR does not preclude them — the config-bound map is the
   initial source of truth and can later be backed by a mutable, user-driven
   store behind the same `IPermissionStore`.
