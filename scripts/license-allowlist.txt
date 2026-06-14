@@ -1,0 +1,11 @@
+# Reviewed license exceptions for scripts/license-scan.sh.
+#
+# Packages here carry a permissive license that the scanner can't resolve
+# automatically — typically an older transitive dependency that declares only a
+# legacy <licenseUrl> instead of an SPDX expression. Each was reviewed by hand;
+# the comment records the actual license and where it was confirmed.
+#
+# Format: one NuGet package id per line. Trailing "# ..." comments are ignored.
+
+System.Reflection.Metadata   # MIT — .NET Foundation (dotnet/corefx LICENSE.TXT)
+xunit.abstractions           # Apache-2.0 — xunit project (license.txt)

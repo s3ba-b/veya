@@ -20,6 +20,9 @@ echo "verify: using solution $sln"
 echo "==> dotnet restore"
 dotnet restore "$sln"
 
+echo "==> license scan (dependency licenses)"
+"$(dirname "$0")/license-scan.sh" "$sln"
+
 echo "==> dotnet format (check only)"
 dotnet format "$sln" --verify-no-changes --no-restore
 
