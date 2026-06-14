@@ -35,7 +35,10 @@ public sealed class ClipboardTool(ISafeExecutor executor, IPermissionGate permis
         }
 
         var (binary, arguments) = SelectBackend();
-        await executor.RunAsync(new ExecRequest("set_clipboard", binary, arguments, StandardInput: text), cancellationToken);
+        // Detached: wl-copy/xclip must stay alive to serve the selection, so run
+        // fire-and-forget without capturing output (ADR-0006) — otherwise the
+        // surviving helper holds a pipe open and hangs the call.
+        await executor.RunAsync(new ExecRequest("set_clipboard", binary, arguments, StandardInput: text, Detached: true), cancellationToken);
         return "Copied the text to the clipboard.";
     }
 
