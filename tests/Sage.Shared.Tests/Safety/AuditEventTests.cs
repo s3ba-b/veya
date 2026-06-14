@@ -30,4 +30,15 @@ public class AuditEventTests
             Assert.Contains(key, auditEvent.Fields.Keys);
         }
     }
+
+    [Fact]
+    public void PermissionDecision_HasExpectedFieldsAndType()
+    {
+        var auditEvent = AuditEvent.PermissionDecision("Clipboard", "set_clipboard", granted: true);
+
+        Assert.Equal("permission.decision", auditEvent.EventType);
+        Assert.Equal("Clipboard", auditEvent.Fields["source"]);
+        Assert.Equal("set_clipboard", auditEvent.Fields["requester"]);
+        Assert.Equal(true, auditEvent.Fields["granted"]);
+    }
 }
