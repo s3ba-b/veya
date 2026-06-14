@@ -1,31 +1,31 @@
-# Sage
+# Veya
 
 **An open-source, privacy-transparent, system-wide AI assistant for Ubuntu/Linux.**
 
 > Status: **pre-alpha** — design and scaffolding phase. Nothing here is usable yet.
 
-Sage is an Apple Intelligence alternative for the Linux desktop. The core idea: a
+Veya is an Apple Intelligence alternative for the Linux desktop. The core idea: a
 central **intelligence daemon** that any UI can talk to over **D-Bus**, with an
 **MCP server** as the system-action layer and **hybrid local/cloud inference**.
 
 ## Why
 
 Desktop AI assistants today are either cloud silos bolted onto a single app, or
-opaque about what leaves your machine. Sage is built around three commitments:
+opaque about what leaves your machine. Veya is built around three commitments:
 
 - **Local-first privacy.** Local models are first-class. Every source of context
   (clipboard, files, notifications, screen) is gated by per-source permissions.
 - **Transparency.** An audit log records every tool invocation and every byte sent
   to a cloud backend. Cloud usage is always user-visible.
 - **System-wide, not app-bound.** One daemon, one D-Bus contract
-  (`org.sage.Sage1`), any number of frontends — overlay window, shell extension,
+  (`org.veya.Veya1`), any number of frontends — overlay window, shell extension,
   CLI, your own client.
 
 ## Architecture at a glance
 
 ```
 Frontends (Overlay UI, GNOME Shell, CLI)
-        │  D-Bus (org.sage.Sage1)
+        │  D-Bus (org.veya.Veya1)
         ▼
 Daemon  — sessions, context, model router (Claude API now, local later)
         │  MCP (stdio)

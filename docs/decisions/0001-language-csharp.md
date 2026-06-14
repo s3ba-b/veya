@@ -5,7 +5,7 @@
 
 ## Context
 
-Sage needs one language for a long-running daemon, an MCP server, shared
+Veya needs one language for a long-running daemon, an MCP server, shared
 contracts, and later a GTK4 UI — on Linux, with good D-Bus and systemd support,
 strong async I/O, and an official MCP SDK. Candidates considered: Rust, Go,
 Python, C#/.NET.
@@ -19,7 +19,7 @@ where GJS is mandatory (out of scope for now).
 ## Consequences
 
 - One toolchain and one CI pipeline (`dotnet build/test/format` via
-  `./scripts/verify.sh`); contracts shared as plain C# types in `Sage.Shared`.
+  `./scripts/verify.sh`); contracts shared as plain C# types in `Veya.Shared`.
 - First-class libraries for every component: Generic Host +
   `Microsoft.Extensions.Hosting.Systemd` (daemon), Tmds.DBus (D-Bus), the
   official ModelContextProtocol C# SDK (MCP), Gir.Core (GTK4/libadwaita), and

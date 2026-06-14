@@ -17,7 +17,7 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Install GTK4/libadwaita runtime libraries
-        # Sage.Overlay's Gir.Core bindings resolve these at runtime; no
+        # Veya.Overlay's Gir.Core bindings resolve these at runtime; no
         # display server is needed to build and unit-test (ADR-0002).
         run: sudo apt-get update && sudo apt-get install -y libgtk-4-1 libadwaita-1-0
 

@@ -1,35 +1,35 @@
 # Running the daemon
 
-Status: the daemon is a skeleton exposing a stub `org.sage.Sage1.Ask` on the
+Status: the daemon is a skeleton exposing a stub `org.veya.Veya1.Ask` on the
 D-Bus session bus (see docs/dbus-interfaces.md and docs/roadmap.md). This
 covers running it directly, as a systemd user service, and trying `Ask`.
 
 ## Run directly (development)
 
 ```sh
-dotnet run --project src/Sage.Daemon
+dotnet run --project src/Veya.Daemon
 ```
 
 Runs in the foreground, logs to the console. Ctrl-C to stop. If a session bus
-is available, it registers `org.sage.Sage1` at `/org/sage/Sage1`; otherwise it
+is available, it registers `org.veya.Veya1` at `/org/veya/Veya1`; otherwise it
 logs a warning and runs without the D-Bus endpoint.
 
 ## MCP tools in development
 
-`Sage.Daemon` discovers tools from `Sage.McpServer` (docs/architecture.md,
+`Veya.Daemon` discovers tools from `Veya.McpServer` (docs/architecture.md,
 "Model router") by spawning it as a child process over stdio
-(`Sage.Daemon.Mcp.McpToolGateway`). By default it looks for an `Sage.McpServer`
+(`Veya.Daemon.Mcp.McpToolGateway`). By default it looks for an `Veya.McpServer`
 executable next to its own binary — a layout that only exists after
 `dotnet publish` places both projects side by side (see
-packaging/systemd/sage-daemon.service).
+packaging/systemd/veya-daemon.service).
 
-For `dotnet run --project src/Sage.Daemon`, build `Sage.McpServer` separately
+For `dotnet run --project src/Veya.Daemon`, build `Veya.McpServer` separately
 and point the Daemon at it:
 
 ```sh
-dotnet build src/Sage.McpServer
-export Mcp__ServerPath=$(pwd)/src/Sage.McpServer/bin/Debug/net9.0/Sage.McpServer
-dotnet run --project src/Sage.Daemon
+dotnet build src/Veya.McpServer
+export Mcp__ServerPath=$(pwd)/src/Veya.McpServer/bin/Debug/net9.0/Veya.McpServer
+dotnet run --project src/Veya.Daemon
 ```
 
 Without this, `McpToolGateway` logs a warning and continues with zero tools —
@@ -60,12 +60,12 @@ is written.
 With the daemon running and a session bus available:
 
 ```sh
-gdbus call --session --dest org.sage.Sage1 \
-  --object-path /org/sage/Sage1 --method org.sage.Sage1.Ask "hello sage"
-# ('Sage received: hello sage',)
+gdbus call --session --dest org.veya.Veya1 \
+  --object-path /org/veya/Veya1 --method org.veya.Veya1.Ask "hello veya"
+# ('Veya received: hello veya',)
 
-busctl --user call org.sage.Sage1 /org/sage/Sage1 org.sage.Sage1 Ask s "hello sage"
-# s "Sage received: hello sage"
+busctl --user call org.veya.Veya1 /org/veya/Veya1 org.veya.Veya1 Ask s "hello veya"
+# s "Veya received: hello veya"
 ```
 
 ## Run as a systemd user service
@@ -80,28 +80,28 @@ calls are no-ops — no `NOTIFY_SOCKET`, no behavior change.
 1. Publish a build:
 
    ```sh
-   dotnet publish src/Sage.Daemon -c Release -o ~/.local/lib/sage
+   dotnet publish src/Veya.Daemon -c Release -o ~/.local/lib/veya
    ```
 
 2. Install the unit file:
 
    ```sh
    mkdir -p ~/.config/systemd/user
-   cp packaging/systemd/sage-daemon.service ~/.config/systemd/user/
+   cp packaging/systemd/veya-daemon.service ~/.config/systemd/user/
    systemctl --user daemon-reload
    ```
 
 3. Enable and start:
 
    ```sh
-   systemctl --user enable --now sage-daemon
+   systemctl --user enable --now veya-daemon
    ```
 
 4. Check status and logs:
 
    ```sh
-   systemctl --user status sage-daemon
-   journalctl --user -u sage-daemon -f
+   systemctl --user status veya-daemon
+   journalctl --user -u veya-daemon -f
    ```
 
 The service runs unprivileged, as your user (ADR-0003). `WantedBy=default.target`
@@ -111,15 +111,15 @@ running without an active login).
 ## Uninstall
 
 ```sh
-systemctl --user disable --now sage-daemon
-rm ~/.config/systemd/user/sage-daemon.service
+systemctl --user disable --now veya-daemon
+rm ~/.config/systemd/user/veya-daemon.service
 systemctl --user daemon-reload
 ```
 
 ## Overlay window
 
-`Sage.Overlay` (ADR-0002) is a minimal GTK4/libadwaita window — a prompt entry
-and a response area — that talks to `org.sage.Sage1` over D-Bus. It has no
+`Veya.Overlay` (ADR-0002) is a minimal GTK4/libadwaita window — a prompt entry
+and a response area — that talks to `org.veya.Veya1` over D-Bus. It has no
 intelligence of its own; it just calls `Ask` and shows the reply.
 
 Requires the GTK4/libadwaita runtime libraries (`libgtk-4-1`,
@@ -128,8 +128,8 @@ Requires the GTK4/libadwaita runtime libraries (`libgtk-4-1`,
 With the daemon running and registered on the session bus:
 
 ```sh
-dotnet run --project src/Sage.Overlay
+dotnet run --project src/Veya.Overlay
 ```
 
 Type a prompt and press Enter. If the daemon isn't running or no session bus
-is available, the response area shows "Sage is unreachable: ...".
+is available, the response area shows "Veya is unreachable: ...".

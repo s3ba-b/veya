@@ -12,7 +12,7 @@ bindings, Electron/web shell.
 
 ## Decision
 
-The Overlay component (`Sage.Overlay`) uses **GTK4 + libadwaita through
+The Overlay component (`Veya.Overlay`) uses **GTK4 + libadwaita through
 Gir.Core**, the GObject-introspection-based .NET bindings.
 
 ## Consequences

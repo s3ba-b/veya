@@ -12,7 +12,7 @@ API with real system data from MCP tools.
    projects); `./scripts/verify.sh` green in GitHub Actions.
 2. **Daemon skeleton** — Generic Host + systemd integration
    (`Microsoft.Extensions.Hosting.Systemd`), runs as a user service.
-3. **D-Bus `Ask(string)` stub** — `org.sage.Sage1` registered on the session bus
+3. **D-Bus `Ask(string)` stub** — `org.veya.Veya1` registered on the session bus
    via Tmds.DBus, returns a canned reply.
 4. **MCP server with `get_system_info`** — ModelContextProtocol C# SDK, stdio
    transport; the central safety layer lands here, before any tool that shells
