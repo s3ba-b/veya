@@ -69,4 +69,5 @@ One issue per branch; PRs run `./scripts/verify.sh` in CI. Read
 
 ## License
 
-TBD (will be an OSI-approved license before the first release).
+Licensed under the [Apache License, Version 2.0](LICENSE). See the [NOTICE](NOTICE)
+file for attribution. Contributions are accepted under the same license.
