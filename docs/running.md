@@ -37,6 +37,24 @@ Without this, `McpToolGateway` logs a warning and continues with zero tools —
 its own knowledge (it may suggest commands for *you* to run instead of running
 them itself).
 
+### Clipboard writing (permission-gated)
+
+The `set_clipboard` tool (the first write tool, ADR-0005/0006) is **default-deny**:
+the model can call it, but the permission gate refuses unless you've granted the
+clipboard source. Grant it by setting the permission in the McpServer's
+environment (it binds the `Permissions` config section):
+
+```sh
+export Permissions__Clipboard=true
+```
+
+Set this in the same environment the Daemon launches McpServer from. On Wayland
+it uses `wl-copy` (install `wl-clipboard`); on X11, `xclip`. The clipboard text
+is passed via stdin, so it never appears in the audit log — only the
+`permission.decision` and `tool.exec` events do. With the permission unset or
+`false`, every attempt is logged as a denied `permission.decision` and nothing
+is written.
+
 ## Try `Ask`
 
 With the daemon running and a session bus available:

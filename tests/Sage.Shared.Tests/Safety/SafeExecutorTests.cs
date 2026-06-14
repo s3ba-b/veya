@@ -40,6 +40,39 @@ public class SafeExecutorTests
     }
 
     [Fact]
+    public async Task RunAsync_PipesStandardInputToProcess()
+    {
+        var allowlist = new Dictionary<string, CommandSpec>
+        {
+            ["cat"] = CommandSpec.AllowAnyArguments("/usr/bin/cat"),
+        };
+        var executor = new SafeExecutor(allowlist, new RecordingAuditLog());
+
+        var result = await executor.RunAsync(new ExecRequest("test_tool", "cat", [], StandardInput: "piped-in"));
+
+        Assert.Equal(0, result.ExitCode);
+        Assert.Contains("piped-in", result.StandardOutput);
+        Assert.False(result.TimedOut);
+    }
+
+    [Fact]
+    public async Task RunAsync_StandardInputContentIsNotAudited()
+    {
+        var allowlist = new Dictionary<string, CommandSpec>
+        {
+            ["cat"] = CommandSpec.AllowAnyArguments("/usr/bin/cat"),
+        };
+        var auditLog = new RecordingAuditLog();
+        var executor = new SafeExecutor(allowlist, auditLog);
+
+        await executor.RunAsync(new ExecRequest("test_tool", "cat", [], StandardInput: "secret-content"));
+
+        var auditEvent = Assert.Single(auditLog.Events);
+        Assert.DoesNotContain("secret-content", auditEvent.Fields.Values.Select(v => v?.ToString()));
+        Assert.DoesNotContain("secret-content", string.Join("|", auditEvent.Fields.Keys));
+    }
+
+    [Fact]
     public async Task RunAsync_BinaryNotAllowlisted_ThrowsAndAuditsDenied()
     {
         var allowlist = new Dictionary<string, CommandSpec>();

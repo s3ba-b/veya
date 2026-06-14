@@ -24,13 +24,13 @@ public sealed class SafeExecutor(
             throw new CommandNotAllowedException(request.Binary);
         }
 
-        var result = await RunProcessAsync(spec.Path, request.Arguments, cancellationToken);
+        var result = await RunProcessAsync(spec.Path, request.Arguments, request.StandardInput, cancellationToken);
 
         await auditLog.WriteAsync(AuditEvent.ToolExecAllowed(request.Tool, request.Binary, request.Arguments, result), cancellationToken);
         return result;
     }
 
-    private async Task<ExecResult> RunProcessAsync(string path, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    private async Task<ExecResult> RunProcessAsync(string path, IReadOnlyList<string> arguments, string? standardInput, CancellationToken cancellationToken)
     {
         var startInfo = new ProcessStartInfo
         {
@@ -38,6 +38,7 @@ public sealed class SafeExecutor(
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            RedirectStandardInput = standardInput is not null,
         };
         foreach (var argument in arguments)
         {
@@ -54,6 +55,12 @@ public sealed class SafeExecutor(
         process.Start();
         process.BeginOutputReadLine();
         process.BeginErrorReadLine();
+
+        if (standardInput is not null)
+        {
+            await process.StandardInput.WriteAsync(standardInput.AsMemory(), cancellationToken);
+            process.StandardInput.Close();
+        }
 
         using var timeoutCts = new CancellationTokenSource(_timeout);
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);

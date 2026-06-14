@@ -9,7 +9,7 @@ isolated in an MCP server behind a safety layer.
 | Component | Project | Responsibility |
 |---|---|---|
 | **Daemon** | `Sage.Daemon` | Long-running user service (Generic Host + `Microsoft.Extensions.Hosting.Systemd`). Exposes D-Bus interface `org.sage.Sage1` via Tmds.DBus. Owns session/context management, per-source permissions, the audit log, and the model router. |
-| **McpServer** | `Sage.McpServer` | MCP server on the official ModelContextProtocol C# SDK, stdio transport, spawned and owned by the Daemon. Exposes Ubuntu system tools. Phase 1 tools are read-only: system info, processes, memory/disk, journald logs, APT package queries, systemd service status. All shell execution goes through the central safety layer (docs/security.md). |
+| **McpServer** | `Sage.McpServer` | MCP server on the official ModelContextProtocol C# SDK, stdio transport, spawned and owned by the Daemon. Exposes Ubuntu system tools. Phase 1 tools are read-only: system info, processes, memory/disk, journald logs, APT package queries, systemd service status. Milestone 2 adds the first write tool, `set_clipboard`, gated by per-source permissions (ADR-0005) and writing via `wl-copy`/`xclip` (ADR-0006). All shell execution goes through the central safety layer (docs/security.md). |
 | **Shared** | `Sage.Shared` | Common models and contracts shared by Daemon, McpServer, and frontends: request/response records, tool result shapes, audit event types, `IInferenceBackend`. |
 | **Overlay** | `Sage.Overlay` | GTK4/libadwaita overlay window via Gir.Core (ADR-0002). Pure D-Bus client of `org.sage.Sage1` — no intelligence of its own. `OverlayViewModel` sends the prompt via `Sage1Client` and returns the reply or a friendly error if the daemon is unreachable. |
 
@@ -66,7 +66,9 @@ used for the D-Bus session bus.
 ┌──────────────────────────── McpServer (Sage.McpServer) ───────────────┐
 │  Read-only tools: system info · processes · memory/disk ·             │
 │                   journald · APT queries · systemd status             │
+│  Write tools:     set_clipboard (permission-gated, ADR-0005/0006)     │
 │  Central safety layer: allowlist · timeouts · output caps · audit log │
+│  Permission gate: per-source, default-deny, audit-logged decisions    │
 └───────────────┬───────────────────────────────────────────────────────┘
                 ▼
         Ubuntu system (unprivileged; polkit for privileged actions, later)
