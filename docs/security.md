@@ -68,6 +68,13 @@ has an independent permission the user grants per source (and later per app).
 Defaults are deny. Decisions are audit-logged. No source is read "because it was
 convenient"; ingestion and query both check permissions.
 
+Implemented in `Sage.Shared.Permissions` (ADR-0005): `PermissionSource` (the
+sources above), `IPermissionStore` (pure, default-deny grant lookup), and
+`IPermissionGate` — the single checkpoint every gated action passes through,
+which writes a `permission.decision` event for every check. For Milestone 2 the
+grant map is **config-based, default-deny** (bound from a `Permissions` section
+by the host); interactive/runtime grant UX is deferred to a later milestone.
+
 ## Cloud transparency
 
 - The router prefers local backends when they are capable enough (local-first).

@@ -74,4 +74,23 @@ public sealed record AuditEvent(DateTimeOffset Timestamp, string EventType, IRea
                 ["outputTokens"] = outputTokens,
                 ["durationMs"] = duration.TotalMilliseconds,
             });
+
+    /// <summary>
+    /// A <c>permission.decision</c> event recording the outcome of a per-source
+    /// permission check (docs/security.md). Written by the permission gate for
+    /// every check, granted or denied.
+    /// </summary>
+    /// <param name="source">The permission source that was checked.</param>
+    /// <param name="requester">The tool or component that asked.</param>
+    /// <param name="granted">Whether access was granted.</param>
+    public static AuditEvent PermissionDecision(string source, string requester, bool granted) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "permission.decision",
+            new Dictionary<string, object?>
+            {
+                ["source"] = source,
+                ["requester"] = requester,
+                ["granted"] = granted,
+            });
 }
