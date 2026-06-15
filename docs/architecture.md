@@ -73,9 +73,14 @@ lives in `Veya.Shared.Context`:
   `Ask` answers without personal context.
 
 `ModelRouter` folds retrieved context into the system prompt via an
-`IContextProvider` (`ContextRetrievalProvider`) before calling the backend. No
-concrete sources (files, notifications) ship yet — those arrive with their own
-ADRs.
+`IContextProvider` (`ContextRetrievalProvider`) before calling the backend.
+
+The first concrete source is **`FileContextSource`** (ADR-0010, `Files`
+permission): it walks user-approved root folders (`Context:Files` config), reads
+matching text files, and chunks them via `TextChunker`. `ContextIndexingService`
+re-indexes the registered sources on daemon startup (`replaceExisting`, so a
+re-index leaves no stale chunks). Notification and other sources arrive with
+their own ADRs.
 
 ## Diagram
 
