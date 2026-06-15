@@ -142,6 +142,22 @@ public sealed record AuditEvent(DateTimeOffset Timestamp, string EventType, IRea
             });
 
     /// <summary>
+    /// A <c>screen.capture</c> event recording a <c>read_screen_text</c> call
+    /// (ADR-0013): whether capture+OCR succeeded, how much text was extracted,
+    /// and duration. Never the screenshot or the extracted text itself.
+    /// </summary>
+    public static AuditEvent ScreenCapture(bool success, int textLength, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "screen.capture",
+            new Dictionary<string, object?>
+            {
+                ["success"] = success,
+                ["textLength"] = textLength,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
+
+    /// <summary>
     /// A <c>permission.decision</c> event recording the outcome of a per-source
     /// permission check (docs/security.md). Written by the permission gate for
     /// every check, granted or denied.

@@ -15,6 +15,8 @@ APT_PACKAGES=(
     # D-Bus tooling for poking at org.veya.Veya1 during development
     d-feet
     dbus-x11
+    # OCR engine for the read_screen_text tool (ADR-0013)
+    tesseract-ocr
 )
 
 sudo apt-get update

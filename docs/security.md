@@ -93,6 +93,14 @@ when that store is read for a digest, with `notification.capture` /
 `notification.query` events carrying counts and timing only — never app names,
 summaries, or bodies.
 
+Screen awareness (ADR-0013) is gated the same way: the `read_screen_text` MCP
+tool checks the `Screen` permission before every call. Even when granted, the
+XDG portal screenshot prompt is a second, per-call consent layer the user can
+still decline. Capture is on-demand and ephemeral — the screenshot is OCR'd and
+deleted immediately, nothing is persisted or indexed, and the `screen.capture`
+event carries only a success flag, extracted text length, and duration — never
+the image or the text.
+
 ## Cloud transparency
 
 - The router prefers local backends when they are capable enough (local-first).

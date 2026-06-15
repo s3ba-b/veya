@@ -55,6 +55,22 @@ is passed via stdin, so it never appears in the audit log — only the
 `false`, every attempt is logged as a denied `permission.decision` and nothing
 is written.
 
+### Screen text (permission-gated)
+
+The `read_screen_text` tool (ADR-0005/0013) is also **default-deny**. Grant it
+the same way:
+
+```sh
+export Permissions__Screen=true
+```
+
+When granted, a call still triggers the XDG Desktop Portal's screenshot
+prompt — a second, per-call consent the user can decline. On success, the
+screenshot is OCR'd with `tesseract` (install the `tesseract-ocr` package) and
+the temp file is deleted immediately; nothing is persisted. With the
+permission unset or `false`, every attempt is logged as a denied
+`permission.decision` and no screenshot is taken.
+
 ## Try `Ask`
 
 With the daemon running and a session bus available:
