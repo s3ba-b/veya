@@ -62,12 +62,23 @@ builder.Services.AddSingleton(sp => new ContextRetriever(
     sp.GetRequiredService<IContextStore>(),
     sp.GetRequiredService<IPermissionGate>(),
     sp.GetRequiredService<IAuditLog>(),
-    candidateSources: [PermissionSource.PersonalIndex]));
+    candidateSources: [PermissionSource.PersonalIndex, PermissionSource.Files]));
 builder.Services.AddSingleton<IContextProvider>(sp => new ContextRetrievalProvider(sp.GetRequiredService<ContextRetriever>()));
+
+// File context source (ADR-0010): indexes user-approved text folders. Inert until
+// Context:Files:Roots is set and Permissions:Files is granted.
+builder.Services.Configure<FileContextOptions>(builder.Configuration.GetSection("Context:Files"));
+builder.Services.AddSingleton<IContextSource>(sp => new FileContextSource(sp.GetRequiredService<IOptions<FileContextOptions>>().Value));
+builder.Services.AddSingleton(sp => new ContextIndexer(
+    sp.GetRequiredService<IEmbeddingBackend>(),
+    sp.GetRequiredService<IContextStore>(),
+    sp.GetRequiredService<IPermissionGate>(),
+    sp.GetRequiredService<IAuditLog>()));
 
 builder.Services.AddSingleton<IModelRouter, ModelRouter>();
 builder.Services.AddSingleton<Veya1Service>();
 builder.Services.AddHostedService<DBusHostedService>();
+builder.Services.AddHostedService<ContextIndexingService>();
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();

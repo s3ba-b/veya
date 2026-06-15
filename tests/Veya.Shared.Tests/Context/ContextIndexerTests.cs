@@ -48,6 +48,37 @@ public class ContextIndexerTests
     }
 
     [Fact]
+    public async Task IngestAsync_WithReplaceExisting_RemovesStaleChunks()
+    {
+        await using var store = new SqliteContextStore("Data Source=:memory:");
+        var indexer = new ContextIndexer(new FakeEmbeddingBackend(), store, new FakePermissionGate(PermissionSource.PersonalIndex), new RecordingAuditLog());
+
+        await indexer.IngestAsync(Source("a", "b", "c"), replaceExisting: true);
+        // Re-index with fewer chunks: the dropped ones must not linger.
+        await indexer.IngestAsync(Source("a"), replaceExisting: true);
+
+        var stored = await store.SearchAsync([6f, 0f, 0f], k: 10, new HashSet<PermissionSource> { PermissionSource.PersonalIndex });
+        var match = Assert.Single(stored);
+        Assert.Equal("a", match.Chunk.Id);
+    }
+
+    [Fact]
+    public async Task IngestAsync_WithReplaceExisting_DoesNotDeleteWhenDenied()
+    {
+        await using var store = new SqliteContextStore("Data Source=:memory:");
+        // Seed via a granting indexer, then attempt a denied replace-index.
+        await new ContextIndexer(new FakeEmbeddingBackend(), store, new FakePermissionGate(PermissionSource.PersonalIndex), new RecordingAuditLog())
+            .IngestAsync(Source("a"), replaceExisting: true);
+
+        var deniedIndexer = new ContextIndexer(new FakeEmbeddingBackend(), store, new FakePermissionGate(), new RecordingAuditLog());
+        var result = await deniedIndexer.IngestAsync(Source("a", "b"), replaceExisting: true);
+
+        Assert.False(result.PermissionGranted);
+        var stored = await store.SearchAsync([5f, 0f, 0f], k: 10, new HashSet<PermissionSource> { PermissionSource.PersonalIndex });
+        Assert.Single(stored);
+    }
+
+    [Fact]
     public async Task IngestAsync_DegradesWithoutThrowing_WhenEmbeddingUnavailable()
     {
         await using var store = new SqliteContextStore("Data Source=:memory:");

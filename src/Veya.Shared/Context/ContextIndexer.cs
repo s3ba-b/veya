@@ -36,14 +36,22 @@ public sealed class ContextIndexer
 
     /// <summary>
     /// Indexes <paramref name="source"/>. Returns without reading anything if its
-    /// permission is denied (the gate has already logged the decision).
+    /// permission is denied (the gate has already logged the decision). When
+    /// <paramref name="replaceExisting"/> is set, the source's existing chunks are
+    /// cleared first (after the permission check passes) so a re-index leaves no
+    /// stale rows behind (ADR-0010).
     /// </summary>
-    public async Task<IndexResult> IngestAsync(IContextSource source, CancellationToken cancellationToken = default)
+    public async Task<IndexResult> IngestAsync(IContextSource source, bool replaceExisting = false, CancellationToken cancellationToken = default)
     {
         var granted = await _permissionGate.CheckAsync(source.Source, Requester, cancellationToken).ConfigureAwait(false);
         if (!granted)
         {
             return new IndexResult(PermissionGranted: false, IndexedCount: 0, EmbeddingUnavailable: false);
+        }
+
+        if (replaceExisting)
+        {
+            await _store.DeleteBySourceAsync(source.Source, cancellationToken).ConfigureAwait(false);
         }
 
         var startedAt = DateTimeOffset.UtcNow;
