@@ -39,10 +39,12 @@ cloud: <selected>)` — the local-first policy from docs/security.md
 tries Ollama first; if it throws `BackendUnavailableException` (e.g. Ollama
 isn't running), the request falls back to the chosen cloud backend.
 `ModelRouter` and `ToolUseLoopRunner` are backend-agnostic and
-unaffected by which backend actually answered. The `CloudUsage`/`ActiveBackend`
-D-Bus surface (docs/dbus-interfaces.md) is a follow-up — in the meantime, the
-`local.request`/`cloud.request` audit log entries record which backend handled
-each call. Tool definitions come
+unaffected by which backend actually answered. Which backend served is surfaced
+over D-Bus from those same audit entries: `BackendActivityAuditLog` decorates the
+audit log, tracking the active backend (read via `GetStatus`) and raising the
+`CloudUsage` signal on every `cloud.request` (docs/dbus-interfaces.md) — so the
+live D-Bus surface can never drift from the recorded `local.request`/`cloud.request`
+trail. Tool definitions come
 from `Veya.Daemon.Mcp.IMcpToolGateway` (`McpToolGateway`), which spawns
 `Veya.McpServer` as a child process over stdio (via the `ModelContextProtocol`
 client SDK), discovers its tools on first use, and executes tool calls

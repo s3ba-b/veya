@@ -21,7 +21,7 @@ public class DBusSessionConnectorTests
         var hasSessionBus = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DBUS_SESSION_BUS_ADDRESS"));
 
         using var connector = new DBusSessionConnector(NullLogger<DBusSessionConnector>.Instance);
-        var registered = await connector.TryRegisterAsync(new Veya1Service(new FakeModelRouter()));
+        var registered = await connector.TryRegisterAsync(new Veya1Service(new FakeModelRouter(), new FakeBackendActivityMonitor()));
 
         Assert.Equal(hasSessionBus, registered);
     }
