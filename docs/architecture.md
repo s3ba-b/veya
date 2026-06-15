@@ -24,15 +24,21 @@ abstraction and drives the request/response cycle via `ToolUseLoopRunner`:
 
 - **ClaudeBackend** — Claude API. Every cloud call is audit-logged
   (`cloud.request`) and user-visible.
+- **MistralBackend** (ADR-0008) — Mistral's hosted API ("La Plateforme")
+  `/v1/chat/completions`. A cloud backend like ClaudeBackend: data leaves the
+  machine, so every call is audit-logged (`cloud.request`, `backend="mistral"`)
+  and user-visible.
 - **OllamaBackend** (ADR-0004) — a local Ollama server's `/api/chat` HTTP API.
   Every call is audit-logged (`local.request`), but since nothing leaves the
   machine this does not trigger `CloudUsage`.
 
 Milestone 2: `IInferenceBackend` is `FallbackInferenceBackend(local: OllamaBackend,
-cloud: ClaudeBackend)` — the local-first policy from docs/security.md
-("Cloud transparency"). Each request tries Ollama first; if it throws
-`BackendUnavailableException` (e.g. Ollama isn't running), the request falls
-back to Claude. `ModelRouter` and `ToolUseLoopRunner` are backend-agnostic and
+cloud: <selected>)` — the local-first policy from docs/security.md
+("Cloud transparency"). The cloud tier is config-selectable (ADR-0008):
+`Inference:CloudBackend` picks `mistral` (default) or `claude`. Each request
+tries Ollama first; if it throws `BackendUnavailableException` (e.g. Ollama
+isn't running), the request falls back to the chosen cloud backend.
+`ModelRouter` and `ToolUseLoopRunner` are backend-agnostic and
 unaffected by which backend actually answered. The `CloudUsage`/`ActiveBackend`
 D-Bus surface (docs/dbus-interfaces.md) is a follow-up — in the meantime, the
 `local.request`/`cloud.request` audit log entries record which backend handled
@@ -59,6 +65,7 @@ used for the D-Bus session bus.
 │  Session & context manager ── per-source permissions ── audit log     │
 │  Model router (IInferenceBackend)                                     │
 │     ├── ClaudeBackend ──────────────► Claude API   (cloud, logged)    │
+│     ├── MistralBackend ─────────────► Mistral API  (cloud, logged)    │
 │     └── OllamaBackend ──────────────► local Ollama (local, logged)    │
 └───────────────┬───────────────────────────────────────────────────────┘
                 │  MCP over stdio (child process)
