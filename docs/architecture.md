@@ -73,7 +73,11 @@ lives in `Veya.Shared.Context`:
   `Ask` answers without personal context.
 
 `ModelRouter` folds retrieved context into the system prompt via an
-`IContextProvider` (`ContextRetrievalProvider`) before calling the backend.
+`IContextProvider` before calling the backend. `CompositeContextProvider`
+combines `ContextRetrievalProvider` (personal context index, above) and
+`NotificationDigestContextProvider` (notification digest, below) into the
+single provider `ModelRouter` expects — each degrades to "no context"
+independently, so a denied or empty source never affects the other.
 
 The first concrete source is **`FileContextSource`** (ADR-0010, `Files`
 permission): it walks user-approved root folders (`Context:Files` config), reads
@@ -99,6 +103,10 @@ behind the `Notifications` permission (ADR-0005). The foundation lives in
 - **`NotificationDigestService`** — a deterministic per-app/urgency digest, gated
   at query time (`notification.query`). Model-driven natural-language summaries
   are a follow-up that takes this digest as input.
+- **`NotificationDigestContextProvider`** (Daemon) — folds that digest into the
+  `Ask` system prompt via `CompositeContextProvider` (above), so the model can
+  answer questions like "what did I miss?". Returns nothing when denied or
+  empty, same convention as `ContextRetrievalProvider`.
 
 **`SessionBusNotificationSource`** (Daemon, ADR-0012) is the real
 `INotificationSource`: it becomes a session-bus *monitor* scoped to
