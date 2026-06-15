@@ -76,10 +76,12 @@ builder.Services.AddSingleton(sp => new ContextIndexer(
     sp.GetRequiredService<IPermissionGate>(),
     sp.GetRequiredService<IAuditLog>()));
 
-// Notification intelligence (ADR-0011): recent-store + digest, behind the
-// Notifications permission. Inert until the real session-bus source lands and
-// Permissions:Notifications is granted — no source/capture service registered yet.
+// Notification intelligence (ADR-0011/0012): recent-store + digest, fed by a
+// session-bus monitor of org.freedesktop.Notifications.Notify, all behind the
+// Notifications permission. Inert without a session bus or without
+// Permissions:Notifications granted (both degrade to no-ops).
 builder.Services.AddSingleton<INotificationStore>(new InMemoryNotificationStore());
+builder.Services.AddSingleton<INotificationSource, SessionBusNotificationSource>();
 builder.Services.AddSingleton(sp => new NotificationDigestService(
     sp.GetRequiredService<INotificationStore>(),
     sp.GetRequiredService<IPermissionGate>(),
@@ -89,6 +91,7 @@ builder.Services.AddSingleton<IModelRouter, ModelRouter>();
 builder.Services.AddSingleton<Veya1Service>();
 builder.Services.AddHostedService<DBusHostedService>();
 builder.Services.AddHostedService<ContextIndexingService>();
+builder.Services.AddHostedService<NotificationCaptureService>();
 builder.Services.AddHostedService<Worker>();
 
 var host = builder.Build();

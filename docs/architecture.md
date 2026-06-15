@@ -88,9 +88,9 @@ The Daemon can capture desktop notifications and summarise them (ADR-0011),
 behind the `Notifications` permission (ADR-0005). The foundation lives in
 `Veya.Shared.Notifications`:
 
-- **`INotificationSource`** — the stream of incoming notifications. The real
-  `org.freedesktop.Notifications` session-bus source is a deferred follow-up, so
-  the pipeline stays desktop-free and headless-testable (hard rule 3).
+- **`INotificationSource`** — the stream of incoming notifications. Kept
+  desktop-free so the pipeline stays headless-testable (hard rule 3); the real
+  implementation lives in the Daemon (below).
 - **`INotificationStore` / `InMemoryNotificationStore`** — a capacity-capped,
   time-ordered recent store (transient; cleared on restart).
 - **`NotificationCaptureService`** (Daemon hosted service) — streams the source
@@ -100,8 +100,16 @@ behind the `Notifications` permission (ADR-0005). The foundation lives in
   at query time (`notification.query`). Model-driven natural-language summaries
   are a follow-up that takes this digest as input.
 
-No real source ships yet, so with default-deny the feature is inert until the
-session-bus source lands.
+**`SessionBusNotificationSource`** (Daemon, ADR-0012) is the real
+`INotificationSource`: it becomes a session-bus *monitor* scoped to
+`org.freedesktop.Notifications.Notify` (`BecomeMonitor` with a tight match
+rule) and maps each call to a `Notification` via the pure `NotifyMessageMapper`.
+It observes only — it never owns or replaces `org.freedesktop.Notifications` —
+so the desktop's own notifications are unaffected even if Veya is stopped. It
+connects lazily (only once `Notifications` is granted) and, like
+`DBusSessionConnector`, degrades to "yield nothing" with no session bus or if
+becoming a monitor fails. Only `NotifyMessageMapper` is unit-tested in CI; the
+bus-coupled wiring is exercised manually (hard rule 3).
 
 ## Diagram
 
