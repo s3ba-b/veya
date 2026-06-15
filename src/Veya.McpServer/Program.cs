@@ -21,8 +21,9 @@ var permissionGrants = Enum.GetValues<PermissionSource>()
 builder.Services.AddSingleton<IPermissionStore>(new PermissionStore(permissionGrants));
 builder.Services.AddSingleton<IPermissionGate, PermissionGate>();
 
-builder.Services.AddSingleton(ToolAllowlist.Combine(SystemInfoTool.Allowlist, ProcessesTool.Allowlist, MemoryDiskTool.Allowlist, JournalTool.Allowlist, PackageTool.Allowlist, ServiceStatusTool.Allowlist, ClipboardTool.Allowlist));
+builder.Services.AddSingleton(ToolAllowlist.Combine(SystemInfoTool.Allowlist, ProcessesTool.Allowlist, MemoryDiskTool.Allowlist, JournalTool.Allowlist, PackageTool.Allowlist, ServiceStatusTool.Allowlist, ClipboardTool.Allowlist, ScreenTool.Allowlist));
 builder.Services.AddSingleton<ISafeExecutor, SafeExecutor>();
+builder.Services.AddSingleton<IScreenCapture, PortalScreenshotClient>();
 
 builder.Services
     .AddMcpServer()
@@ -33,7 +34,8 @@ builder.Services
     .WithTools<JournalTool>()
     .WithTools<PackageTool>()
     .WithTools<ServiceStatusTool>()
-    .WithTools<ClipboardTool>();
+    .WithTools<ClipboardTool>()
+    .WithTools<ScreenTool>();
 
 var host = builder.Build();
 await host.RunAsync();

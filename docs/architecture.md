@@ -119,6 +119,28 @@ connects lazily (only once `Notifications` is granted) and, like
 becoming a monitor fails. Only `NotifyMessageMapper` is unit-tested in CI; the
 bus-coupled wiring is exercised manually (hard rule 3).
 
+### Screen awareness
+
+The `read_screen_text` MCP tool (`Veya.McpServer.Tools.ScreenTool`, ADR-0013)
+lets the model read the text currently on screen, behind the `Screen`
+permission (ADR-0005):
+
+- **`IScreenCapture`** / **`PortalScreenshotClient`** — calls the XDG Desktop
+  Portal's `org.freedesktop.portal.Screenshot` over the session bus, which
+  shows the user a native screenshot prompt (a second consent layer), and
+  returns the resulting temp file's path, or `null` if the bus, portal, or
+  user declines.
+- **`PortalScreenshotResponse`** — pure mapping from the portal's
+  `Request.Response` signal to a local file path; the only part of the
+  pipeline unit-tested in CI (hard rule 3).
+- **`ScreenTool`** — on a successful capture, runs `tesseract <file> stdout`
+  through the safety layer to extract text, deletes the temp file
+  immediately, and audit-logs `screen.capture` (success flag, extracted text
+  length, duration — never the image or the text itself).
+
+Capture is on-demand and ephemeral: nothing is captured continuously or
+persisted, and there is no screen-content index.
+
 ## Diagram
 
 ```
@@ -142,6 +164,7 @@ bus-coupled wiring is exercised manually (hard rule 3).
 │  Read-only tools: system info · processes · memory/disk ·             │
 │                   journald · APT queries · systemd status             │
 │  Write tools:     set_clipboard (permission-gated, ADR-0005/0006)     │
+│                   read_screen_text (permission-gated, ADR-0005/0013)  │
 │  Central safety layer: allowlist · timeouts · output caps · audit log │
 │  Permission gate: per-source, default-deny, audit-logged decisions    │
 └───────────────┬───────────────────────────────────────────────────────┘
