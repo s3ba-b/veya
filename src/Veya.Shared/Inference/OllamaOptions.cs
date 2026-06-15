@@ -11,4 +11,11 @@ public sealed class OllamaOptions
 
     /// <summary>Name of the model to request, e.g. <c>"llama3.1"</c>.</summary>
     public string Model { get; set; } = "llama3.1";
+
+    /// <summary>
+    /// Name of the embedding model for <see cref="OllamaEmbeddingBackend"/>
+    /// (ADR-0009), e.g. <c>"nomic-embed-text"</c>. Used by the personal context
+    /// index, not by chat completions.
+    /// </summary>
+    public string EmbeddingModel { get; set; } = "nomic-embed-text";
 }

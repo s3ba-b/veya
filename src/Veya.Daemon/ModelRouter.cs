@@ -9,8 +9,10 @@ namespace Veya.Daemon;
 /// <see cref="FallbackInferenceBackend"/>, local-first with cloud fallback —
 /// docs/architecture.md "Model router"), with tools discovered from and
 /// executed via <see cref="IMcpToolGateway"/> (docs/roadmap.md step 7).
+/// When an <see cref="IContextProvider"/> is supplied, relevant personal context
+/// is folded into the system prompt before the call (ADR-0009).
 /// </summary>
-public sealed class ModelRouter(IInferenceBackend backend, IMcpToolGateway toolGateway) : IModelRouter
+public sealed class ModelRouter(IInferenceBackend backend, IMcpToolGateway toolGateway, IContextProvider? contextProvider = null) : IModelRouter
 {
     private const string SystemPrompt = "You are Veya, a privacy-conscious AI assistant for Ubuntu/Linux.";
 
@@ -18,8 +20,18 @@ public sealed class ModelRouter(IInferenceBackend backend, IMcpToolGateway toolG
     {
         var tools = await toolGateway.GetToolsAsync(cancellationToken).ConfigureAwait(false);
 
+        var systemPrompt = SystemPrompt;
+        if (contextProvider is not null)
+        {
+            var contextBlock = await contextProvider.GetContextBlockAsync(prompt, cancellationToken).ConfigureAwait(false);
+            if (!string.IsNullOrEmpty(contextBlock))
+            {
+                systemPrompt = $"{SystemPrompt}\n\n{contextBlock}";
+            }
+        }
+
         var request = new InferenceRequest(
-            SystemPrompt: SystemPrompt,
+            SystemPrompt: systemPrompt,
             Messages: [new ChatMessage(ChatRole.User, [new TextBlock(prompt)])],
             Tools: tools);
 

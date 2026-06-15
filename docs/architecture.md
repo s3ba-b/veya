@@ -53,6 +53,30 @@ the gateway logs a warning and returns no tools, so `Ask` falls back to a
 plain-text reply with no tool calls — the same graceful-degradation pattern
 used for the D-Bus session bus.
 
+### Personal context index
+
+The Daemon can ground answers in user-approved personal content (ADR-0009),
+behind the same per-source permission gate as every other source (ADR-0005). It
+lives in `Veya.Shared.Context`:
+
+- **`IEmbeddingBackend`** — turns text into vectors. **`OllamaEmbeddingBackend`**
+  computes them locally (`/api/embed`, audit-logged `local.request`); a cloud
+  embedding backend is deferred, so the index adds no cloud egress and never
+  trips `CloudUsage`.
+- **`IContextStore`** — **`SqliteContextStore`**, SQLite + the `sqlite-vec`
+  extension. KNN search filters to permitted sources inside the query (a `source`
+  metadata column on the `vec0` table), so a revoked source cannot surface.
+- **`ContextIndexer`** (ingest) and **`ContextRetriever`** (query) — each checks
+  the source's permission through `IPermissionGate`, so permission is enforced at
+  **both** ingestion and query time. Both degrade rather than break when Ollama
+  is down: ingestion skips and re-tries later, retrieval returns nothing and
+  `Ask` answers without personal context.
+
+`ModelRouter` folds retrieved context into the system prompt via an
+`IContextProvider` (`ContextRetrievalProvider`) before calling the backend. No
+concrete sources (files, notifications) ship yet — those arrive with their own
+ADRs.
+
 ## Diagram
 
 ```
@@ -92,9 +116,10 @@ referenced by all of the above.
    calls `Ask("what's eating my RAM?")` on `org.veya.Veya1`.
 2. **D-Bus** — the session bus routes the call to the Daemon, which creates (or
    resumes) a session and appends the query to its context.
-3. **Daemon / router** — the router picks a backend (Claude API in Milestone 1)
-   and sends the conversation plus the MCP tool definitions it has discovered
-   from the McpServer.
+3. **Daemon / router** — the router picks a backend (Claude API in Milestone 1),
+   folds in any relevant personal context retrieved from the index (ADR-0009,
+   permission-checked at query time), and sends the conversation plus the MCP
+   tool definitions it has discovered from the McpServer.
 4. **Model → tool calls** — the model decides it needs data and requests e.g.
    `list_processes` (sorted by memory) and `get_memory_info`.
 5. **MCP tools** — the Daemon forwards each tool call over stdio to the

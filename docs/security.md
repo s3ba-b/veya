@@ -81,6 +81,12 @@ which writes a `permission.decision` event for every check. For Milestone 2 the
 grant map is **config-based, default-deny** (bound from a `Permissions` section
 by the host); interactive/runtime grant UX is deferred to a later milestone.
 
+The personal context index (ADR-0009) is a live source behind this gate: the
+`PersonalIndex` permission is checked both when content is ingested
+(`ContextIndexer`) and when it is queried for retrieval (`ContextRetriever`),
+each writing a `permission.decision` event, plus `context.ingest`/`context.query`
+events that carry counts and timing but never the indexed text or the query.
+
 ## Cloud transparency
 
 - The router prefers local backends when they are capable enough (local-first).
