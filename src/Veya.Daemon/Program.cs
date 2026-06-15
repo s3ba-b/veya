@@ -3,6 +3,7 @@ using Veya.Daemon;
 using Veya.Daemon.Mcp;
 using Veya.Shared.Context;
 using Veya.Shared.Inference;
+using Veya.Shared.Notifications;
 using Veya.Shared.Permissions;
 using Veya.Shared.Safety;
 
@@ -72,6 +73,15 @@ builder.Services.AddSingleton<IContextSource>(sp => new FileContextSource(sp.Get
 builder.Services.AddSingleton(sp => new ContextIndexer(
     sp.GetRequiredService<IEmbeddingBackend>(),
     sp.GetRequiredService<IContextStore>(),
+    sp.GetRequiredService<IPermissionGate>(),
+    sp.GetRequiredService<IAuditLog>()));
+
+// Notification intelligence (ADR-0011): recent-store + digest, behind the
+// Notifications permission. Inert until the real session-bus source lands and
+// Permissions:Notifications is granted — no source/capture service registered yet.
+builder.Services.AddSingleton<INotificationStore>(new InMemoryNotificationStore());
+builder.Services.AddSingleton(sp => new NotificationDigestService(
+    sp.GetRequiredService<INotificationStore>(),
     sp.GetRequiredService<IPermissionGate>(),
     sp.GetRequiredService<IAuditLog>()));
 

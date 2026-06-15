@@ -82,6 +82,27 @@ re-indexes the registered sources on daemon startup (`replaceExisting`, so a
 re-index leaves no stale chunks). Notification and other sources arrive with
 their own ADRs.
 
+### Notification intelligence
+
+The Daemon can capture desktop notifications and summarise them (ADR-0011),
+behind the `Notifications` permission (ADR-0005). The foundation lives in
+`Veya.Shared.Notifications`:
+
+- **`INotificationSource`** — the stream of incoming notifications. The real
+  `org.freedesktop.Notifications` session-bus source is a deferred follow-up, so
+  the pipeline stays desktop-free and headless-testable (hard rule 3).
+- **`INotificationStore` / `InMemoryNotificationStore`** — a capacity-capped,
+  time-ordered recent store (transient; cleared on restart).
+- **`NotificationCaptureService`** (Daemon hosted service) — streams the source
+  into the store once `Notifications` is granted, audit-logged (`notification.capture`,
+  counts only).
+- **`NotificationDigestService`** — a deterministic per-app/urgency digest, gated
+  at query time (`notification.query`). Model-driven natural-language summaries
+  are a follow-up that takes this digest as input.
+
+No real source ships yet, so with default-deny the feature is inert until the
+session-bus source lands.
+
 ## Diagram
 
 ```
