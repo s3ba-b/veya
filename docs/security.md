@@ -87,6 +87,12 @@ The personal context index (ADR-0009) is a live source behind this gate: the
 each writing a `permission.decision` event, plus `context.ingest`/`context.query`
 events that carry counts and timing but never the indexed text or the query.
 
+Notification intelligence (ADR-0011) is gated the same way: the `Notifications`
+permission is checked when notifications are captured into the recent store and
+when that store is read for a digest, with `notification.capture` /
+`notification.query` events carrying counts and timing only — never app names,
+summaries, or bodies.
+
 ## Cloud transparency
 
 - The router prefers local backends when they are capable enough (local-first).

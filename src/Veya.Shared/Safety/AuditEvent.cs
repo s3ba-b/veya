@@ -111,6 +111,37 @@ public sealed record AuditEvent(DateTimeOffset Timestamp, string EventType, IRea
             });
 
     /// <summary>
+    /// A <c>notification.capture</c> event recording desktop notifications taken
+    /// into the recent store (ADR-0011). Carries only how many were captured and
+    /// the duration — never app names, summaries, or bodies, which can be
+    /// sensitive.
+    /// </summary>
+    public static AuditEvent NotificationCapture(int count, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "notification.capture",
+            new Dictionary<string, object?>
+            {
+                ["count"] = count,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
+
+    /// <summary>
+    /// A <c>notification.query</c> event recording a read of the notification
+    /// store, e.g. building a digest (ADR-0011). Carries only how many items were
+    /// returned and the duration — never notification text.
+    /// </summary>
+    public static AuditEvent NotificationQuery(int returnedCount, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "notification.query",
+            new Dictionary<string, object?>
+            {
+                ["returnedCount"] = returnedCount,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
+
+    /// <summary>
     /// A <c>permission.decision</c> event recording the outcome of a per-source
     /// permission check (docs/security.md). Written by the permission gate for
     /// every check, granted or denied.
