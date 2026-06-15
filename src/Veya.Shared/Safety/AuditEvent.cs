@@ -76,6 +76,41 @@ public sealed record AuditEvent(DateTimeOffset Timestamp, string EventType, IRea
             });
 
     /// <summary>
+    /// A <c>context.ingest</c> event recording a personal-context ingestion run
+    /// (ADR-0009). Like the request events it carries no indexed text — only the
+    /// source, requester, how many chunks were indexed, and duration.
+    /// </summary>
+    public static AuditEvent ContextIngest(string source, string requester, int indexedCount, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "context.ingest",
+            new Dictionary<string, object?>
+            {
+                ["source"] = source,
+                ["requester"] = requester,
+                ["indexedCount"] = indexedCount,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
+
+    /// <summary>
+    /// A <c>context.query</c> event recording a retrieval against the personal
+    /// context index (ADR-0009). Carries no query text or chunk content — only
+    /// the requester, the sources searched, how many matches were returned, and
+    /// duration.
+    /// </summary>
+    public static AuditEvent ContextQuery(string requester, IReadOnlyList<string> sources, int matchCount, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "context.query",
+            new Dictionary<string, object?>
+            {
+                ["requester"] = requester,
+                ["sources"] = sources,
+                ["matchCount"] = matchCount,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
+
+    /// <summary>
     /// A <c>permission.decision</c> event recording the outcome of a per-source
     /// permission check (docs/security.md). Written by the permission gate for
     /// every check, granted or denied.

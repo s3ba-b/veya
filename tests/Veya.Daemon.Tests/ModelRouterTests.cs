@@ -68,6 +68,59 @@ public class ModelRouterTests
         await Assert.ThrowsAsync<BackendUnavailableException>(() => router.AskAsync("ping"));
     }
 
+    private sealed class FixedContextProvider(string? block) : IContextProvider
+    {
+        public Task<string?> GetContextBlockAsync(string prompt, CancellationToken cancellationToken = default) =>
+            Task.FromResult(block);
+    }
+
+    [Fact]
+    public async Task AskAsync_FoldsContextBlockIntoSystemPrompt_WhenProviderReturnsContext()
+    {
+        InferenceRequest? capturedRequest = null;
+        var response = new InferenceResponse(
+            new ChatMessage(ChatRole.Assistant, [new TextBlock("ok")]),
+            StopReason: "end_turn",
+            InputTokens: 1,
+            OutputTokens: 1);
+        var backend = new CapturingInferenceBackend(request =>
+        {
+            capturedRequest = request;
+            return response;
+        });
+
+        var router = new ModelRouter(backend, new NoToolsGateway(), new FixedContextProvider("Relevant context:\n- your dog is named Rex"));
+
+        await router.AskAsync("What's my dog called?");
+
+        Assert.NotNull(capturedRequest);
+        Assert.Contains("You are Veya", capturedRequest!.SystemPrompt);
+        Assert.Contains("your dog is named Rex", capturedRequest.SystemPrompt);
+    }
+
+    [Fact]
+    public async Task AskAsync_LeavesSystemPromptUnchanged_WhenProviderReturnsNull()
+    {
+        InferenceRequest? capturedRequest = null;
+        var response = new InferenceResponse(
+            new ChatMessage(ChatRole.Assistant, [new TextBlock("ok")]),
+            StopReason: "end_turn",
+            InputTokens: 1,
+            OutputTokens: 1);
+        var backend = new CapturingInferenceBackend(request =>
+        {
+            capturedRequest = request;
+            return response;
+        });
+
+        var router = new ModelRouter(backend, new NoToolsGateway(), new FixedContextProvider(null));
+
+        await router.AskAsync("hello");
+
+        Assert.NotNull(capturedRequest);
+        Assert.Equal("You are Veya, a privacy-conscious AI assistant for Ubuntu/Linux.", capturedRequest!.SystemPrompt);
+    }
+
     [Fact]
     public async Task AskAsync_SendsDiscoveredToolsToBackend()
     {

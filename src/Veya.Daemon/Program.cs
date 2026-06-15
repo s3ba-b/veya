@@ -1,7 +1,9 @@
 using Microsoft.Extensions.Options;
 using Veya.Daemon;
 using Veya.Daemon.Mcp;
+using Veya.Shared.Context;
 using Veya.Shared.Inference;
+using Veya.Shared.Permissions;
 using Veya.Shared.Safety;
 
 var builder = Host.CreateApplicationBuilder(args);
@@ -39,6 +41,30 @@ builder.Services.AddSingleton<IInferenceBackend>(sp =>
 });
 builder.Services.Configure<McpServerOptions>(builder.Configuration.GetSection("Mcp"));
 builder.Services.AddSingleton<IMcpToolGateway, McpToolGateway>();
+
+// Personal context index (ADR-0009): local-first embeddings + sqlite-vec store,
+// behind the same per-source permission gate as every other context source
+// (ADR-0005), bound default-deny from the "Permissions" config section.
+var contextGrants = Enum.GetValues<PermissionSource>()
+    .ToDictionary(source => source, source => builder.Configuration.GetValue($"Permissions:{source}", false));
+builder.Services.AddSingleton<IPermissionStore>(new PermissionStore(contextGrants));
+builder.Services.AddSingleton<IPermissionGate, PermissionGate>();
+builder.Services.AddSingleton<IEmbeddingBackend>(sp =>
+    new OllamaEmbeddingBackend(new HttpClient(), sp.GetRequiredService<IAuditLog>(), sp.GetRequiredService<IOptions<OllamaOptions>>().Value));
+builder.Services.AddSingleton<IContextStore>(_ =>
+{
+    var dbPath = ContextPaths.DefaultDatabasePath();
+    Directory.CreateDirectory(Path.GetDirectoryName(dbPath)!);
+    return new SqliteContextStore($"Data Source={dbPath}");
+});
+builder.Services.AddSingleton(sp => new ContextRetriever(
+    sp.GetRequiredService<IEmbeddingBackend>(),
+    sp.GetRequiredService<IContextStore>(),
+    sp.GetRequiredService<IPermissionGate>(),
+    sp.GetRequiredService<IAuditLog>(),
+    candidateSources: [PermissionSource.PersonalIndex]));
+builder.Services.AddSingleton<IContextProvider>(sp => new ContextRetrievalProvider(sp.GetRequiredService<ContextRetriever>()));
+
 builder.Services.AddSingleton<IModelRouter, ModelRouter>();
 builder.Services.AddSingleton<Veya1Service>();
 builder.Services.AddHostedService<DBusHostedService>();

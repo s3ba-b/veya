@@ -7,5 +7,6 @@
 #
 # Format: one NuGet package id per line. Trailing "# ..." comments are ignored.
 
+System.Memory                # MIT — .NET Foundation (dotnet/corefx LICENSE.TXT); transitive via Microsoft.Data.Sqlite
 System.Reflection.Metadata   # MIT — .NET Foundation (dotnet/corefx LICENSE.TXT)
 xunit.abstractions           # Apache-2.0 — xunit project (license.txt)
