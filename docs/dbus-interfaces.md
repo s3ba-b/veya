@@ -53,10 +53,13 @@ CancelSession(in s sessionId)                               (planned)
 Cancels in-flight inference/tool calls for the session.
 
 ```
-GetStatus(out a{sv} status)                                 (planned)
+GetStatus(out a{sv} status)
 ```
-Daemon status: version, active backend (`"claude"` / `"local"`), MCP server
-health, counts of pending requests.
+Daemon status as a string→variant map. Implemented keys: `version` (s) and
+`activeBackend` (s) — the backend that served the most recent request
+(`"ollama"`, `"mistral"`, or `"claude"`), defaulting to the local-first backend
+before any request. MCP server health and pending-request counts are planned
+additions to the same map.
 
 ### Signals
 
@@ -67,10 +70,15 @@ Streaming tokens for frontends that render incrementally; `Ask`/`AskSession`
 still return the full reply.
 
 ```
-CloudUsage(s sessionId, s backend, u sentBytes)             (planned)
+CloudUsage((ssuu) usage)
 ```
 Emitted whenever data leaves the machine — this is the user-visible cloud usage
-hook (a product pillar; see docs/security.md).
+hook (a product pillar; see docs/security.md). The struct mirrors the
+`cloud.request` audit event: `backend` (s), `model` (s), `inputTokens` (u),
+`outputTokens` (u) — never prompt or response content. Local requests never
+fire it. (Supersedes the earlier planned `(s sessionId, s backend, u sentBytes)`
+form: there are no sessions yet and backends report tokens, not bytes;
+`sessionId` returns when session management lands.)
 
 ```
 ToolExecuted(s sessionId, s toolName, b allowed)            (planned)
@@ -80,8 +88,8 @@ Mirrors safety-layer audit events so UIs can show live activity.
 ### Properties
 
 ```
-Version          s   read   daemon semantic version
-ActiveBackend    s   read   "claude" | "local"              (planned)
+Version          s   read   daemon semantic version          (planned; available now via GetStatus)
+ActiveBackend    s   read   "ollama" | "mistral" | "claude"   (planned; available now via GetStatus)
 ```
 
 ## Conventions

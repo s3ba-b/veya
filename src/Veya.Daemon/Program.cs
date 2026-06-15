@@ -7,7 +7,11 @@ using Veya.Shared.Safety;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSystemd();
 builder.Services.AddSingleton<IDBusSessionConnector, DBusSessionConnector>();
-builder.Services.AddSingleton<IAuditLog>(_ => new JsonLinesAuditLog(AuditPaths.DefaultDirectory()));
+// Single audit log, surfaced two ways: the append-only trail (IAuditLog) and a
+// live activity feed for the D-Bus CloudUsage signal (IBackendActivityMonitor, issue #51).
+builder.Services.AddSingleton(_ => new BackendActivityAuditLog(new JsonLinesAuditLog(AuditPaths.DefaultDirectory())));
+builder.Services.AddSingleton<IAuditLog>(sp => sp.GetRequiredService<BackendActivityAuditLog>());
+builder.Services.AddSingleton<IBackendActivityMonitor>(sp => sp.GetRequiredService<BackendActivityAuditLog>());
 builder.Services.Configure<OllamaOptions>(builder.Configuration.GetSection("Ollama"));
 builder.Services.Configure<MistralOptions>(builder.Configuration.GetSection("Mistral"));
 builder.Services.Configure<InferenceOptions>(builder.Configuration.GetSection("Inference"));

@@ -20,7 +20,7 @@ public class DBusHostedServiceTests
     [Fact]
     public async Task StartAsync_WhenSessionBusAvailable_CompletesSuccessfully()
     {
-        var hostedService = new DBusHostedService(new FakeConnector(true), new Veya1Service(new FakeModelRouter()), NullLogger<DBusHostedService>.Instance);
+        var hostedService = new DBusHostedService(new FakeConnector(true), new Veya1Service(new FakeModelRouter(), new FakeBackendActivityMonitor()), NullLogger<DBusHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
         await hostedService.StopAsync(CancellationToken.None);
@@ -31,7 +31,7 @@ public class DBusHostedServiceTests
     {
         // Hard rule #3: the daemon must keep running headless, just without
         // the D-Bus endpoint.
-        var hostedService = new DBusHostedService(new FakeConnector(false), new Veya1Service(new FakeModelRouter()), NullLogger<DBusHostedService>.Instance);
+        var hostedService = new DBusHostedService(new FakeConnector(false), new Veya1Service(new FakeModelRouter(), new FakeBackendActivityMonitor()), NullLogger<DBusHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
         await hostedService.StopAsync(CancellationToken.None);
