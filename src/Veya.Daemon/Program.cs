@@ -64,7 +64,6 @@ builder.Services.AddSingleton(sp => new ContextRetriever(
     sp.GetRequiredService<IPermissionGate>(),
     sp.GetRequiredService<IAuditLog>(),
     candidateSources: [PermissionSource.PersonalIndex, PermissionSource.Files]));
-builder.Services.AddSingleton<IContextProvider>(sp => new ContextRetrievalProvider(sp.GetRequiredService<ContextRetriever>()));
 
 // File context source (ADR-0010): indexes user-approved text folders. Inert until
 // Context:Files:Roots is set and Permissions:Files is granted.
@@ -86,6 +85,13 @@ builder.Services.AddSingleton(sp => new NotificationDigestService(
     sp.GetRequiredService<INotificationStore>(),
     sp.GetRequiredService<IPermissionGate>(),
     sp.GetRequiredService<IAuditLog>()));
+
+// Ask folds in both the personal context index (ADR-0009) and the notification
+// digest (ADR-0011), each degrading to "no context" independently.
+builder.Services.AddSingleton<IContextProvider>(sp => new CompositeContextProvider([
+    new ContextRetrievalProvider(sp.GetRequiredService<ContextRetriever>()),
+    new NotificationDigestContextProvider(sp.GetRequiredService<NotificationDigestService>()),
+]));
 
 builder.Services.AddSingleton<IModelRouter, ModelRouter>();
 builder.Services.AddSingleton<Veya1Service>();
