@@ -17,8 +17,9 @@ pillar, not a feature.
   - **Daemon** (`Veya.Daemon`) — long-running user service. Generic Host +
     `Microsoft.Extensions.Hosting.Systemd`. Exposes D-Bus interface
     `org.veya.Veya1` via **Tmds.DBus**. Owns session/context management and a
-    model router behind an `IInferenceBackend` abstraction (Claude API backend
-    first; local Ollama/LLamaSharp backend later).
+    model router behind an `IInferenceBackend` abstraction (cloud backend is
+    config-selectable — Claude or Mistral [ADR-0008]; local Ollama backend
+    [ADR-0004], LLamaSharp later).
   - **McpServer** (`Veya.McpServer`) — official **ModelContextProtocol** C# SDK,
     stdio transport. Ubuntu system tools. Phase 1 tools are read-only: system
     info, processes, memory/disk, journald logs, APT package queries, systemd

@@ -30,6 +30,8 @@ API with real system data from MCP tools.
 
 - LocalBackend (Ollama and/or LLamaSharp) behind `IInferenceBackend`; router
   policy for local-vs-cloud with user-visible cloud usage.
+- Cloud backend is config-selectable (ADR-0008): Mistral ("La Plateforme",
+  default) or Claude, behind the local-first `FallbackInferenceBackend`.
 - Clipboard writing tools — the first non-read-only tools, gated by per-source
   permissions and fully audit-logged.
 

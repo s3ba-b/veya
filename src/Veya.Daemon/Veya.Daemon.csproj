@@ -3,6 +3,9 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <RootNamespace>Veya.Daemon</RootNamespace>
+    <!-- Dev-only API key storage via `dotnet user-secrets` (ADR-0008); loaded
+         only in the Development environment, outside the repo source tree. -->
+    <UserSecretsId>c0231498-8d70-43e7-b701-734cfe482f65</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
