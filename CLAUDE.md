@@ -11,8 +11,9 @@ pillar, not a feature.
 
 ## Stack (decided — see docs/decisions/, do not relitigate)
 
-- **C# / .NET 9** for all core components. JavaScript only for a future GNOME
-  Shell extension shim (out of scope for now). [ADR-0001]
+- **C# / .NET 9** for all core components. **JavaScript (GJS)** for the GNOME
+  Shell extension shim (`src/gnome-shell-extension/`, ADR-0014) — the one
+  sanctioned exception to C#. [ADR-0001]
 - One solution, separate projects:
   - **Daemon** (`Veya.Daemon`) — long-running user service. Generic Host +
     `Microsoft.Extensions.Hosting.Systemd`. Exposes D-Bus interface

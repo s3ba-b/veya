@@ -45,8 +45,8 @@ API with real system data from MCP tools.
 ## Milestone 4 — Voice, screen awareness, GNOME polish
 
 - Voice input/output.
-- Screen awareness (explicitly permission-gated, local-first).
-- GNOME polish: shell extension shim (JavaScript), keyboard summon, theming.
+- ~~Screen awareness (explicitly permission-gated, local-first).~~ **Done** (ADR-0013, #63)
+- ~~GNOME polish: shell extension shim (JavaScript), keyboard summon, theming.~~ **Done** (ADR-0014, #65)
 
 ## Non-goals (for now)
 
