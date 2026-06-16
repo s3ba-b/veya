@@ -179,7 +179,8 @@ referenced by all of the above.
    calls `Ask("what's eating my RAM?")` on `org.veya.Veya1`.
 2. **D-Bus** — the session bus routes the call to the Daemon, which creates (or
    resumes) a session and appends the query to its context.
-3. **Daemon / router** — the router picks a backend (Claude API in Milestone 1),
+3. **Daemon / router** — the router picks a backend (local-first: Ollama, falling
+   back to the configured cloud backend — see "Model router" above),
    folds in any relevant personal context retrieved from the index (ADR-0009,
    permission-checked at query time), and sends the conversation plus the MCP
    tool definitions it has discovered from the McpServer.

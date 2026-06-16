@@ -53,12 +53,29 @@ events through the same logging sink.
 
 - Append-only JSON Lines under `$XDG_STATE_HOME/veya/audit/` (default
   `~/.local/state/veya/audit/`), rotated by size.
-- Event types: `tool.exec` (safety layer), `tool.read` (direct reads),
-  `cloud.request` (backend, model, byte counts — never the prompt content
-  itself unless the user opts in; written by `ClaudeBackend` and `MistralBackend`
-  (ADR-0008), both of which send data off the machine), `local.request` (same
-  shape as `cloud.request`, written by `OllamaBackend`, ADR-0004; nothing leaves
-  the machine so this does not trigger `CloudUsage`), `permission.decision`.
+- Event types (factories on `Veya.Shared.Safety.AuditEvent`; every event carries a
+  timestamp and never any captured content unless noted):
+  - `tool.exec` — safety layer; a command that was run or refused (`allowed` flag),
+    with binary, argv, exit code, duration, and truncation flags.
+  - `tool.read` *(planned)* — direct file/`/proc` reads that use no subprocess,
+    routed through the same logging sink; not yet emitted.
+  - `cloud.request` — backend, model, input/output token counts, duration — never
+    the prompt or response content unless the user opts in; written by `ClaudeBackend`
+    and `MistralBackend` (ADR-0008), both of which send data off the machine.
+  - `local.request` — same shape as `cloud.request`, written by `OllamaBackend`
+    (ADR-0004); nothing leaves the machine, so this does not trigger `CloudUsage`.
+  - `context.ingest` — personal-context ingestion (ADR-0009): source, requester,
+    indexed-chunk count, duration — never the indexed text.
+  - `context.query` — retrieval against the personal index (ADR-0009): requester,
+    sources searched, match count, duration — never the query or chunk text.
+  - `notification.capture` — notifications taken into the recent store (ADR-0011):
+    count and duration only — never app names, summaries, or bodies.
+  - `notification.query` — a read of the notification store, e.g. a digest
+    (ADR-0011): returned count and duration only — never notification text.
+  - `screen.capture` — a `read_screen_text` call (ADR-0013): success flag, extracted
+    text length, duration — never the screenshot or the text.
+  - `permission.decision` — every per-source permission check, granted or denied:
+    source, requester, `granted` flag.
 - Readable by the user, surfaced in the UI later; the `CloudUsage` and
   `ToolExecuted` D-Bus signals (docs/dbus-interfaces.md) mirror it live.
 - **Upgrading from a pre-rename (Sage) install:** the audit directory moved from

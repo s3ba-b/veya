@@ -1,9 +1,12 @@
 # Roadmap
 
-Status: pre-alpha. Milestone 1 is the walking skeleton; everything after it
-builds on the same daemon + D-Bus + MCP spine.
+Status: pre-alpha. Milestones 1–3 are implemented; Milestone 4 is in progress
+(screen awareness and the GNOME shell extension are done, voice remains).
+Milestone 1 was the walking skeleton; everything after it builds on the same
+daemon + D-Bus + MCP spine. Completed milestones below keep their step lists as
+a record of what shipped.
 
-## Milestone 1 — MVP: end-to-end answer on screen
+## Milestone 1 — MVP: end-to-end answer on screen — **Done**
 
 Goal: a question typed into a minimal overlay window gets answered by the Claude
 API with real system data from MCP tools.
@@ -26,7 +29,7 @@ API with real system data from MCP tools.
 8. **Overlay window** — minimal GTK4/libadwaita window (Gir.Core): text entry,
    response view, talking to the daemon over D-Bus.
 
-## Milestone 2 — Local models + first write actions
+## Milestone 2 — Local models + first write actions — **Done**
 
 - LocalBackend (Ollama and/or LLamaSharp) behind `IInferenceBackend`; router
   policy for local-vs-cloud with user-visible cloud usage.
@@ -35,16 +38,16 @@ API with real system data from MCP tools.
 - Clipboard writing tools — the first non-read-only tools, gated by per-source
   permissions and fully audit-logged.
 
-## Milestone 3 — Personal context + notification intelligence
+## Milestone 3 — Personal context + notification intelligence — **Done**
 
 - Personal context index: SQLite + sqlite-vec embeddings over user-approved
   sources, per-source permissions enforced at ingestion and query time.
 - Notification intelligence: summarize, prioritize, and answer questions about
   desktop notifications.
 
-## Milestone 4 — Voice, screen awareness, GNOME polish
+## Milestone 4 — Voice, screen awareness, GNOME polish — **In progress**
 
-- Voice input/output.
+- Voice input/output. **(remaining)**
 - ~~Screen awareness (explicitly permission-gated, local-first).~~ **Done** (ADR-0013, #63)
 - ~~GNOME polish: shell extension shim (JavaScript), keyboard summon, theming.~~ **Done** (ADR-0014, #65)
 

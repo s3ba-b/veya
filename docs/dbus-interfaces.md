@@ -1,8 +1,8 @@
 # D-Bus interfaces (draft)
 
-Status: **draft** — this is the Milestone 1 contract plus sketches of what comes
-next. Anything marked *(planned)* is not stable and may change; changes to the
-shipped surface require an ADR or roadmap note.
+Status: **draft** — this is the currently shipped contract plus sketches of what
+comes next. Anything marked *(planned)* is not stable and may change; changes to
+the shipped surface require an ADR or roadmap note.
 
 ## Bus identity
 
