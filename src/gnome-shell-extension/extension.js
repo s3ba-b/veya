@@ -7,8 +7,10 @@ import GLib from 'gi://GLib';
 import Clutter from 'gi://Clutter';
 import Shell from 'gi://Shell';
 import Meta from 'gi://Meta';
+import Pango from 'gi://Pango';
 
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const DBUS_NAME = 'org.veya.Veya1';
@@ -26,8 +28,10 @@ export default class VeyaExtension extends Extension {
     _cloudSignalSubId = null;
     _keyPressId = null;
     _settings = null;
+    _indicator = null;
 
     enable() {
+        log('Veya: enable()');
         this._settings = this.getSettings();
         this._buildPanel();
         this._connectCloudSignal();
@@ -39,9 +43,12 @@ export default class VeyaExtension extends Extension {
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
             () => this._toggle(),
         );
+        this._addPanelButton();
+        log('Veya: enable() done, keybinding registered');
     }
 
     disable() {
+        log('Veya: disable()');
         Main.wm.removeKeybinding('summon-shortcut');
 
         if (this._cloudSignalSubId !== null) {
@@ -57,8 +64,14 @@ export default class VeyaExtension extends Extension {
         this._cancellable?.cancel();
         this._cancellable = null;
 
-        this._panel?.destroy();
-        this._panel = null;
+        this._indicator?.destroy();
+        this._indicator = null;
+
+        if (this._panel) {
+            Main.layoutManager.removeChrome(this._panel);
+            this._panel.destroy();
+            this._panel = null;
+        }
         this._entry = null;
         this._spinner = null;
         this._cloudBadge = null;
@@ -69,12 +82,13 @@ export default class VeyaExtension extends Extension {
     // ── UI ───────────────────────────────────────────────────────────────────
 
     _buildPanel() {
+        log('Veya: _buildPanel()');
         this._panel = new St.BoxLayout({
             style_class: 'veya-panel',
             vertical: true,
             visible: false,
-            width: 620,
             reactive: true,
+            track_hover: true,
         });
 
         this._entry = new St.Entry({
@@ -110,16 +124,13 @@ export default class VeyaExtension extends Extension {
         });
         this._reply.clutter_text.set_line_wrap(true);
         this._reply.clutter_text.set_selectable(true);
-        this._reply.clutter_text.set_line_wrap_mode(imports.gi.Pango.WrapMode.WORD_CHAR);
+        this._reply.clutter_text.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
 
         this._panel.add_child(this._entry);
         this._panel.add_child(statusRow);
         this._panel.add_child(this._reply);
 
-        Main.uiGroup.add_child(this._panel);
-
-        this._panel.connect('notify::width', () => this._reposition());
-        this._panel.connect('notify::height', () => this._reposition());
+        Main.layoutManager.addTopChrome(this._panel);
 
         this._keyPressId = global.stage.connect('key-press-event', (_actor, event) => {
             if (this._panel.visible && event.get_key_symbol() === Clutter.KEY_Escape) {
@@ -128,40 +139,71 @@ export default class VeyaExtension extends Extension {
             }
             return Clutter.EVENT_PROPAGATE;
         });
+
+        log('Veya: _buildPanel() done');
     }
 
     _reposition() {
         const monitor = Main.layoutManager.primaryMonitor;
         if (!monitor) return;
         const panelH = Main.panel?.height ?? 0;
-        this._panel.set_position(
-            monitor.x + Math.floor((monitor.width - this._panel.width) / 2),
-            monitor.y + panelH + 48,
-        );
+        const panelW = 620;
+        const x = monitor.x + Math.floor((monitor.width - panelW) / 2);
+        const y = monitor.y + panelH + 48;
+        log(`Veya: reposition to ${x},${y} (monitor ${monitor.width}x${monitor.height})`);
+        this._panel.set_position(x, y);
+        this._panel.set_width(panelW);
     }
 
     _toggle() {
-        if (this._panel.visible)
-            this._hide();
-        else
-            this._show();
+        log(`Veya: _toggle(), panel visible=${this._panel?.visible}`);
+        try {
+            if (this._panel.visible)
+                this._hide();
+            else
+                this._show();
+        } catch (e) {
+            logError(e, 'Veya: _toggle failed');
+        }
     }
 
     _show() {
+        log('Veya: _show()');
         this._entry.set_text('');
         this._reply.set_text('');
         this._reply.visible = false;
         this._cloudBadge.visible = false;
         this._spinner.visible = false;
-        this._panel.visible = true;
         this._reposition();
+        this._panel.visible = true;
         this._entry.grab_key_focus();
+        log('Veya: _show() done');
     }
 
     _hide() {
+        log('Veya: _hide()');
         this._panel.visible = false;
         this._cancellable?.cancel();
         this._cancellable = null;
+    }
+
+    _addPanelButton() {
+        this._indicator = new PanelMenu.Button(0.0, 'Veya', true);
+        const icon = new St.Icon({
+            icon_name: 'edit-find-symbolic',
+            style_class: 'system-status-icon',
+        });
+        this._indicator.add_child(icon);
+        this._indicator.connect('button-press-event', (_actor, event) => {
+            if (event.get_button() === Clutter.BUTTON_PRIMARY) {
+                log('Veya: panel button clicked');
+                this._toggle();
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+        Main.panel.addToStatusArea('veya', this._indicator, 1, 'right');
+        log('Veya: panel button added');
     }
 
     // ── D-Bus ────────────────────────────────────────────────────────────────
