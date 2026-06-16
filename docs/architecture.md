@@ -12,9 +12,7 @@ isolated in an MCP server behind a safety layer.
 | **McpServer** | `Veya.McpServer` | MCP server on the official ModelContextProtocol C# SDK, stdio transport, spawned and owned by the Daemon. Exposes Ubuntu system tools. Phase 1 tools are read-only: system info, processes, memory/disk, journald logs, APT package queries, systemd service status. Milestone 2 adds the first write tool, `set_clipboard`, gated by per-source permissions (ADR-0005) and writing via `wl-copy`/`xclip` (ADR-0006). All shell execution goes through the central safety layer (docs/security.md). |
 | **Shared** | `Veya.Shared` | Common models and contracts shared by Daemon, McpServer, and frontends: request/response records, tool result shapes, audit event types, `IInferenceBackend`. |
 | **Overlay** | `Veya.Overlay` | GTK4/libadwaita overlay window via Gir.Core (ADR-0002). Pure D-Bus client of `org.veya.Veya1` — no intelligence of its own. `OverlayViewModel` sends the prompt via `Veya1Client` and returns the reply or a friendly error if the daemon is unreachable. |
-
-A future GNOME Shell extension shim (JavaScript) is another thin D-Bus client and
-is out of scope for now.
+| **GNOME Shell extension** | `src/gnome-shell-extension/` (GJS) | ES-module GNOME Shell extension (ADR-0014), GNOME 45+ / Ubuntu 24.04+. Keyboard-summon (`<Super><Shift>v`) and floating panel UI; thin D-Bus client of `org.veya.Veya1`, subscribes to `CloudUsage` for in-panel cloud badge. Not part of the .NET solution; installed via `scripts/install-gnome-extension.sh`. |
 
 ### Model router
 
@@ -145,7 +143,7 @@ persisted, and there is no screen-content index.
 
 ```
 ┌────────────────────────────── Frontends ──────────────────────────────┐
-│   Overlay (GTK4/Gir.Core)      GNOME Shell shim (later)      CLI      │
+│   Overlay (GTK4/Gir.Core)   GNOME Shell ext (GJS, ADR-0014)   CLI    │
 └───────────────┬───────────────────────┬──────────────────────┬────────┘
                 │            D-Bus session bus                 │
                 │        org.veya.Veya1  /org/veya/Veya1       │
@@ -197,9 +195,12 @@ referenced by all of the above.
 ## Source layout
 
 ```
-src/    Veya.Daemon/  Veya.McpServer/  Veya.Shared/  Veya.Overlay/
+src/    Veya.Daemon/  Veya.McpServer/  Veya.Shared/  Veya.Overlay/  gnome-shell-extension/
 tests/  Veya.Daemon.Tests/  Veya.McpServer.Tests/  Veya.Shared.Tests/  Veya.Overlay.Tests/
 ```
+
+`gnome-shell-extension/` is GJS (JavaScript), not part of the .NET solution.
+Install with `./scripts/install-gnome-extension.sh`.
 
 Tests must not assume a desktop session (no session bus, no display); D-Bus and
 process execution are abstracted behind interfaces and faked.

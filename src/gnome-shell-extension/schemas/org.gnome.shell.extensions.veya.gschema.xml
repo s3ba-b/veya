@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.veya"
+          path="/org/gnome/shell/extensions/veya/">
+    <key name="summon-shortcut" type="as">
+      <default>['&lt;Super&gt;&lt;Shift&gt;v']</default>
+      <summary>Summon shortcut</summary>
+      <description>Keyboard shortcut to show the Veya assistant panel. Change via: gsettings set org.gnome.shell.extensions.veya summon-shortcut "['&lt;Super&gt;&lt;Shift&gt;v']"</description>
+    </key>
+  </schema>
+</schemalist>

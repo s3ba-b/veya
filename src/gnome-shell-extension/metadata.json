@@ -1,0 +1,9 @@
+{
+  "name": "Veya",
+  "description": "Keyboard-summoned AI assistant panel — thin D-Bus client for org.veya.Veya1",
+  "uuid": "veya@veya.org",
+  "shell-version": ["45", "46", "47", "48"],
+  "version": 1,
+  "url": "https://github.com/s3ba-b/veya",
+  "settings-schema": "org.gnome.shell.extensions.veya"
+}
