@@ -39,7 +39,7 @@ incompatible code paths.
 ## Decision
 
 **A GJS ES-module GNOME Shell extension (`src/gnome-shell-extension/`,
-UUID `veya@veya.org`) targeting GNOME 45+.**
+UUID `veya@veya-project.org`) targeting GNOME 45+.**
 
 The extension is a thin D-Bus client of `org.veya.Veya1` — no intelligence,
 no system access, no permission logic of its own:

@@ -5,7 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 EXT_SRC="$SCRIPT_DIR/../src/gnome-shell-extension"
-EXT_UUID="veya@veya.org"
+EXT_UUID="veya@veya-project.org"
 EXT_DIR="$HOME/.local/share/gnome-shell/extensions/$EXT_UUID"
 
 echo "Installing Veya extension to $EXT_DIR"
