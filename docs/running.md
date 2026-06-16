@@ -1,8 +1,9 @@
 # Running the daemon
 
-Status: the daemon is a skeleton exposing a stub `org.veya.Veya1.Ask` on the
-D-Bus session bus (see docs/dbus-interfaces.md and docs/roadmap.md). This
-covers running it directly, as a systemd user service, and trying `Ask`.
+Status: the daemon exposes `org.veya.Veya1.Ask` on the D-Bus session bus,
+routing the prompt through the model router and MCP tools (see
+docs/dbus-interfaces.md and docs/roadmap.md). This covers running it directly,
+as a systemd user service, and trying `Ask`.
 
 ## Run directly (development)
 
@@ -78,11 +79,13 @@ With the daemon running and a session bus available:
 ```sh
 gdbus call --session --dest org.veya.Veya1 \
   --object-path /org/veya/Veya1 --method org.veya.Veya1.Ask "hello veya"
-# ('Veya received: hello veya',)
 
 busctl --user call org.veya.Veya1 /org/veya/Veya1 org.veya.Veya1 Ask s "hello veya"
-# s "Veya received: hello veya"
 ```
+
+The reply is the model's answer. With no inference backend reachable (no Ollama
+running and no cloud API key configured), `Ask` returns a plain-text error
+instead: `Veya can't reach its model backend right now: …`.
 
 ## Run as a systemd user service
 
@@ -149,3 +152,35 @@ dotnet run --project src/Veya.Overlay
 
 Type a prompt and press Enter. If the daemon isn't running or no session bus
 is available, the response area shows "Veya is unreachable: ...".
+
+## GNOME Shell extension
+
+The GNOME Shell extension (`src/gnome-shell-extension/`, ADR-0014) adds a
+keyboard-summoned floating panel and a top-bar button. Like the Overlay it is a
+thin D-Bus client of `org.veya.Veya1` — it calls `Ask` and subscribes to
+`CloudUsage` for the in-panel cloud badge; no intelligence runs on this side.
+
+Requires **GNOME Shell 45+** (Ubuntu 24.04 or later) — it uses ES-module
+syntax that earlier shells don't support.
+
+Install (copies the extension into `~/.local/share/gnome-shell/extensions/`,
+compiles its GSettings schema):
+
+```sh
+./scripts/install-gnome-extension.sh
+gnome-extensions enable veya@veya-project.org
+```
+
+Then reload GNOME Shell so it picks up the extension: **Alt+F2 → `r`** on X11,
+or **log out and back in** on Wayland.
+
+With the daemon running, summon the panel with **`Super+Shift+V`** (toggles it),
+or click the Veya button in the top bar. Type a prompt and press Enter; the
+panel shows "Thinking…" while the `Ask` call is in flight, then the reply. If a
+request reaches a cloud backend, a cloud badge appears in the panel.
+
+Change the summon shortcut:
+
+```sh
+gsettings set org.gnome.shell.extensions.veya summon-shortcut "['<Super><Shift>v']"
+```
