@@ -7,11 +7,6 @@ namespace Veya.Daemon.Tests;
 
 public class DBusSessionConnectorTests
 {
-    private sealed class FakeModelRouter : IModelRouter
-    {
-        public Task<string> AskAsync(string prompt, CancellationToken cancellationToken = default) => Task.FromResult(prompt);
-    }
-
     private sealed class FakeVoiceAskService : IVoiceAskService
     {
         public Task<(string Transcript, string Reply)> AskAsync(uint maxDurationMs, CancellationToken cancellationToken = default) =>
@@ -28,7 +23,7 @@ public class DBusSessionConnectorTests
         var hasSessionBus = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DBUS_SESSION_BUS_ADDRESS"));
 
         using var connector = new DBusSessionConnector(NullLogger<DBusSessionConnector>.Instance);
-        var registered = await connector.TryRegisterAsync(new Veya1Service(new FakeModelRouter(), new FakeVoiceAskService(), new FakeBackendActivityMonitor()));
+        var registered = await connector.TryRegisterAsync(new Veya1Service(new FakeModelRouter(prompt => Task.FromResult(prompt)), new FakeVoiceAskService(), new FakeBackendActivityMonitor()));
 
         Assert.Equal(hasSessionBus, registered);
     }

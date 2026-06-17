@@ -1,6 +1,7 @@
 using Veya.Shared.Notifications;
 using Veya.Shared.Permissions;
 using Veya.Shared.Tests.Context;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Shared.Tests.Notifications;

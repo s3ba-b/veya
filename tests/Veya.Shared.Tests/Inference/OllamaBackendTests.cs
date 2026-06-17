@@ -1,38 +1,14 @@
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using Veya.Shared.Inference;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Shared.Tests.Inference;
 
 public class OllamaBackendTests
 {
-    private sealed class FakeHttpMessageHandler(string responseJson, HttpStatusCode statusCode = HttpStatusCode.OK) : HttpMessageHandler
-    {
-        public string? LastRequestBody { get; private set; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            if (request.Content is not null)
-            {
-                LastRequestBody = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            return new HttpResponseMessage(statusCode)
-            {
-                Content = new StringContent(responseJson, Encoding.UTF8, "application/json"),
-            };
-        }
-    }
-
-    private sealed class ThrowingHttpMessageHandler : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-            throw new HttpRequestException("Connection refused");
-    }
-
     private static OllamaBackend CreateBackend(HttpMessageHandler handler, string model = "llama3.1") =>
         new(new HttpClient(handler), new OllamaOptions { Model = model });
 
@@ -51,7 +27,7 @@ public class OllamaBackendTests
         }
         """;
 
-        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson));
+        var backend = CreateBackend(new CapturingHttpMessageHandler(responseJson));
 
         var request = new InferenceRequest(
             SystemPrompt: "You are Veya.",
@@ -83,7 +59,7 @@ public class OllamaBackendTests
         }
         """;
 
-        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson));
+        var backend = CreateBackend(new CapturingHttpMessageHandler(responseJson));
 
         var schema = JsonDocument.Parse("""{"type":"object","properties":{"path":{"type":"string"}}}""").RootElement;
         var request = new InferenceRequest(
@@ -107,7 +83,7 @@ public class OllamaBackendTests
         {"message": {"role": "assistant", "content": "ok"}, "done": true, "prompt_eval_count": 1, "eval_count": 1}
         """;
 
-        var handler = new FakeHttpMessageHandler(responseJson);
+        var handler = new CapturingHttpMessageHandler(responseJson);
         var backend = CreateBackend(handler, model: "qwen2.5");
 
         var schema = JsonDocument.Parse("""{"type":"object","properties":{}}""").RootElement;
@@ -141,7 +117,7 @@ public class OllamaBackendTests
         {"message": {"role": "assistant", "content": "Your disk is 42% full."}, "done": true, "prompt_eval_count": 1, "eval_count": 1}
         """;
 
-        var handler = new FakeHttpMessageHandler(responseJson);
+        var handler = new CapturingHttpMessageHandler(responseJson);
         var backend = CreateBackend(handler);
 
         var input = JsonDocument.Parse("""{"path":"/"}""").RootElement;
@@ -187,7 +163,7 @@ public class OllamaBackendTests
     [Fact]
     public async Task CompleteAsync_ThrowsBackendUnavailable_OnErrorStatusCode()
     {
-        var backend = CreateBackend(new FakeHttpMessageHandler("model not found", HttpStatusCode.NotFound));
+        var backend = CreateBackend(new CapturingHttpMessageHandler("model not found", HttpStatusCode.NotFound));
 
         var request = new InferenceRequest(
             SystemPrompt: null,

@@ -30,6 +30,7 @@ echo "==> dotnet build"
 dotnet build "$sln" --no-restore --configuration Release -warnaserror
 
 echo "==> dotnet test"
-dotnet test "$sln" --no-build --configuration Release
+dotnet test "$sln" --no-build --configuration Release \
+    --collect:"XPlat Code Coverage" --results-directory ./coverage
 
 echo "verify: OK"

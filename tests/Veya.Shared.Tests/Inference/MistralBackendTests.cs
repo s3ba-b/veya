@@ -1,47 +1,14 @@
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 using Veya.Shared.Inference;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Shared.Tests.Inference;
 
 public class MistralBackendTests
 {
-    private sealed class FakeApiKeyProvider(string? apiKey) : IApiKeyProvider
-    {
-        public Task<string?> GetApiKeyAsync(CancellationToken cancellationToken = default) => Task.FromResult(apiKey);
-    }
-
-    private sealed class FakeHttpMessageHandler(string responseJson, HttpStatusCode statusCode = HttpStatusCode.OK) : HttpMessageHandler
-    {
-        public string? LastRequestBody { get; private set; }
-
-        public AuthenticationHeaderValue? LastAuthorization { get; private set; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            LastAuthorization = request.Headers.Authorization;
-            if (request.Content is not null)
-            {
-                LastRequestBody = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            return new HttpResponseMessage(statusCode)
-            {
-                Content = new StringContent(responseJson, Encoding.UTF8, "application/json"),
-            };
-        }
-    }
-
-    private sealed class ThrowingHttpMessageHandler : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-            throw new HttpRequestException("Connection refused");
-    }
-
     private static MistralBackend CreateBackend(
         HttpMessageHandler handler,
         string? apiKey = "mk-test-123",
@@ -58,7 +25,7 @@ public class MistralBackendTests
         }
         """;
 
-        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson));
+        var backend = CreateBackend(new CapturingHttpMessageHandler(responseJson));
 
         var request = new InferenceRequest(
             SystemPrompt: "You are Veya.",
@@ -91,7 +58,7 @@ public class MistralBackendTests
         }
         """;
 
-        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson));
+        var backend = CreateBackend(new CapturingHttpMessageHandler(responseJson));
 
         var schema = JsonDocument.Parse("""{"type":"object","properties":{"path":{"type":"string"}}}""").RootElement;
         var request = new InferenceRequest(
@@ -115,7 +82,7 @@ public class MistralBackendTests
         {"choices": [{"message": {"role": "assistant", "content": "ok"}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 1, "completion_tokens": 1}}
         """;
 
-        var handler = new FakeHttpMessageHandler(responseJson);
+        var handler = new CapturingHttpMessageHandler(responseJson);
         var backend = CreateBackend(handler, apiKey: "mk-secret", model: "mistral-small-latest");
 
         var schema = JsonDocument.Parse("""{"type":"object","properties":{}}""").RootElement;
@@ -126,8 +93,8 @@ public class MistralBackendTests
 
         await backend.CompleteAsync(request);
 
-        Assert.Equal("Bearer", handler.LastAuthorization!.Scheme);
-        Assert.Equal("mk-secret", handler.LastAuthorization.Parameter);
+        Assert.Equal("Bearer", handler.LastRequest!.Headers.Authorization!.Scheme);
+        Assert.Equal("mk-secret", handler.LastRequest!.Headers.Authorization!.Parameter);
 
         using var body = JsonDocument.Parse(handler.LastRequestBody!);
         var root = body.RootElement;
@@ -152,7 +119,7 @@ public class MistralBackendTests
         {"choices": [{"message": {"role": "assistant", "content": "Your disk is 42% full."}, "finish_reason": "stop"}], "usage": {"prompt_tokens": 1, "completion_tokens": 1}}
         """;
 
-        var handler = new FakeHttpMessageHandler(responseJson);
+        var handler = new CapturingHttpMessageHandler(responseJson);
         var backend = CreateBackend(handler);
 
         var input = JsonDocument.Parse("""{"path":"/"}""").RootElement;
@@ -192,7 +159,7 @@ public class MistralBackendTests
     [Fact]
     public async Task CompleteAsync_ThrowsBackendUnavailable_WhenNoApiKey()
     {
-        var backend = CreateBackend(new FakeHttpMessageHandler("{}"), apiKey: null);
+        var backend = CreateBackend(new CapturingHttpMessageHandler("{}"), apiKey: null);
 
         var request = new InferenceRequest(
             SystemPrompt: null,
@@ -219,7 +186,7 @@ public class MistralBackendTests
     [Fact]
     public async Task CompleteAsync_ThrowsBackendUnavailable_OnErrorStatusCode()
     {
-        var backend = CreateBackend(new FakeHttpMessageHandler("unauthorized", HttpStatusCode.Unauthorized));
+        var backend = CreateBackend(new CapturingHttpMessageHandler("unauthorized", HttpStatusCode.Unauthorized));
 
         var request = new InferenceRequest(
             SystemPrompt: null,

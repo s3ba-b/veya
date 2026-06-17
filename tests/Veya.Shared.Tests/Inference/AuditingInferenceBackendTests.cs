@@ -1,22 +1,12 @@
 using Veya.Shared.Inference;
 using Veya.Shared.Safety;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Shared.Tests.Inference;
 
 public class AuditingInferenceBackendTests
 {
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
-        }
-    }
-
     private sealed class StubBackend(InferenceResponse response) : IInferenceBackend
     {
         public Task<InferenceResponse> CompleteAsync(InferenceRequest request, CancellationToken cancellationToken = default) =>

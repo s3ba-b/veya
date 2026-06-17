@@ -2,20 +2,8 @@ using System.Runtime.CompilerServices;
 using Veya.Shared.Context;
 using Veya.Shared.Inference;
 using Veya.Shared.Permissions;
-using Veya.Shared.Safety;
 
 namespace Veya.Shared.Tests.Context;
-
-internal sealed class RecordingAuditLog : IAuditLog
-{
-    public List<AuditEvent> Events { get; } = [];
-
-    public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-    {
-        Events.Add(auditEvent);
-        return Task.CompletedTask;
-    }
-}
 
 /// <summary>Grants the configured sources; denies everything else (default-deny).</summary>
 internal sealed class FakePermissionGate(params PermissionSource[] granted) : IPermissionGate
