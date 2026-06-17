@@ -22,4 +22,7 @@ public enum PermissionSource
 
     /// <summary>The personal context index.</summary>
     PersonalIndex,
+
+    /// <summary>The microphone, for voice input (ADR-0015).</summary>
+    Microphone,
 }

@@ -139,6 +139,39 @@ permission (ADR-0005):
 Capture is on-demand and ephemeral: nothing is captured continuously or
 persisted, and there is no screen-content index.
 
+### Voice I/O
+
+The D-Bus `AskVoice` method (`Veya.Daemon.Voice.VoiceAskService`, ADR-0015) is
+the voice equivalent of `Ask`, behind the `Microphone` permission
+(ADR-0005). Unlike screen awareness and clipboard writes, this runs entirely
+in the Daemon, not McpServer — there's no model-invoked tool here, since voice
+is an input/output modality for a question, not contextual data the model
+decides to fetch mid-answer:
+
+- **`IAudioRecorder`** / **`AlsaAudioRecorder`** — records up to
+  `Voice:MaxRecordingMs` of microphone audio via `arecord` through the
+  Daemon's own `ISafeExecutor` instance (separate from McpServer's: its
+  allowlist only needs `arecord`/`espeak-ng`, and its timeout must cover a
+  multi-second recording, not McpServer's 5-second default).
+- **`ISpeechToText`** / **`WhisperNetTranscriber`** — transcribes the
+  recording in-process with a local Whisper model (`Whisper.net`, no
+  subprocess, no apt dependency). The model file is fetched separately
+  (`scripts/download-whisper-model.sh`); missing it degrades to "couldn't
+  transcribe" rather than crashing.
+- **`ITextToSpeech`** / **`EspeakTextToSpeech`** — speaks the reply aloud via
+  `espeak-ng`, text piped through stdin so it never appears in the audit log,
+  same reasoning as `ClipboardTool`'s stdin handling (ADR-0006).
+- **`VoiceAskService`** — orchestrates the above: permission check, record,
+  transcribe, run the transcript through the same `IModelRouter.AskAsync`
+  used by typed `Ask`, speak the reply best-effort. Audit events
+  `voice.capture`/`voice.speak` carry only success flags, text lengths, and
+  durations — never audio or text content.
+
+Recording is on-demand and bounded; nothing is captured continuously, and
+speaking a TTS failure never fails the call — the text reply is already in
+hand. The GNOME shell extension's mic button UI is a deliberate fast-follow,
+not part of this slice.
+
 ## Diagram
 
 ```
@@ -163,6 +196,7 @@ persisted, and there is no screen-content index.
 │                   journald · APT queries · systemd status             │
 │  Write tools:     set_clipboard (permission-gated, ADR-0005/0006)     │
 │                   read_screen_text (permission-gated, ADR-0005/0013)  │
+│  (AskVoice runs in the Daemon directly — see "Voice I/O" above)       │
 │  Central safety layer: allowlist · timeouts · output caps · audit log │
 │  Permission gate: per-source, default-deny, audit-logged decisions    │
 └───────────────┬───────────────────────────────────────────────────────┘

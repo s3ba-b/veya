@@ -1,4 +1,5 @@
 using Tmds.DBus;
+using Veya.Daemon.Voice;
 using Veya.Shared;
 using Veya.Shared.Inference;
 using Xunit;
@@ -12,8 +13,13 @@ public class Veya1ServiceTests
         public Task<string> AskAsync(string prompt, CancellationToken cancellationToken = default) => respond(prompt);
     }
 
-    private static Veya1Service Service(IModelRouter router, IBackendActivityMonitor? monitor = null) =>
-        new(router, monitor ?? new FakeBackendActivityMonitor());
+    private sealed class FakeVoiceAskService(Func<uint, Task<(string Transcript, string Reply)>> respond) : IVoiceAskService
+    {
+        public Task<(string Transcript, string Reply)> AskAsync(uint maxDurationMs, CancellationToken cancellationToken = default) => respond(maxDurationMs);
+    }
+
+    private static Veya1Service Service(IModelRouter router, IBackendActivityMonitor? monitor = null, IVoiceAskService? voiceAsk = null) =>
+        new(router, voiceAsk ?? new FakeVoiceAskService(_ => Task.FromResult((string.Empty, string.Empty))), monitor ?? new FakeBackendActivityMonitor());
 
     [Fact]
     public async Task AskAsync_ReturnsRouterReply()
@@ -33,6 +39,19 @@ public class Veya1ServiceTests
         var reply = await service.AskAsync("ping");
 
         Assert.Contains("no API key configured", reply);
+    }
+
+    [Fact]
+    public async Task AskVoiceAsync_DelegatesToVoiceAskService()
+    {
+        var service = Service(
+            new FakeModelRouter(prompt => Task.FromResult(prompt)),
+            voiceAsk: new FakeVoiceAskService(maxDurationMs => Task.FromResult(($"heard:{maxDurationMs}", "Veya's reply"))));
+
+        var (transcript, reply) = await service.AskVoiceAsync(8000);
+
+        Assert.Equal("heard:8000", transcript);
+        Assert.Equal("Veya's reply", reply);
     }
 
     [Fact]

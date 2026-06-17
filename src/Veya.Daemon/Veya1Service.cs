@@ -1,5 +1,6 @@
 using System.Reflection;
 using Tmds.DBus;
+using Veya.Daemon.Voice;
 using Veya.Shared;
 using Veya.Shared.Inference;
 
@@ -7,7 +8,8 @@ namespace Veya.Daemon;
 
 /// <summary>
 /// Implementation of org.veya.Veya1. <see cref="AskAsync"/> routes the prompt
-/// through the <see cref="IModelRouter"/> (model router); <see cref="GetStatusAsync"/>
+/// through the <see cref="IModelRouter"/> (model router); <see cref="AskVoiceAsync"/>
+/// delegates to <see cref="VoiceAskService"/> (ADR-0015); <see cref="GetStatusAsync"/>
 /// and the <c>CloudUsage</c> signal surface backend activity from
 /// <see cref="IBackendActivityMonitor"/>. Real session/context management arrives
 /// in later issues.
@@ -18,11 +20,13 @@ public sealed class Veya1Service : IVeya1
         Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "0.0.0";
 
     private readonly IModelRouter _modelRouter;
+    private readonly IVoiceAskService _voiceAsk;
     private readonly IBackendActivityMonitor _activity;
 
-    public Veya1Service(IModelRouter modelRouter, IBackendActivityMonitor activity)
+    public Veya1Service(IModelRouter modelRouter, IVoiceAskService voiceAsk, IBackendActivityMonitor activity)
     {
         _modelRouter = modelRouter;
+        _voiceAsk = voiceAsk;
         _activity = activity;
         _activity.CloudRequested += info => CloudUsage?.Invoke(info);
     }
@@ -47,6 +51,9 @@ public sealed class Veya1Service : IVeya1
             return $"Veya can't reach its model backend right now: {ex.Message}";
         }
     }
+
+    public Task<(string Transcript, string Reply)> AskVoiceAsync(uint maxDurationMs) =>
+        _voiceAsk.AskAsync(maxDurationMs);
 
     public Task<IDictionary<string, object>> GetStatusAsync()
     {

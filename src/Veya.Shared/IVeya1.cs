@@ -15,6 +15,17 @@ public interface IVeya1 : IDBusObject
     public Task<string> AskAsync(string prompt);
 
     /// <summary>
+    /// D-Bus <c>AskVoice(in u maxDurationMs, out s transcript, out s reply)</c>
+    /// (ADR-0015): records up to <c>maxDurationMs</c> of microphone audio
+    /// (default <c>Voice:MaxRecordingMs</c> when 0), transcribes it locally,
+    /// runs the transcript through the same pipeline as <see cref="AskAsync"/>,
+    /// and speaks the reply aloud best-effort. Gated by the <c>Microphone</c>
+    /// permission (default-deny); a denial returns an explanatory reply with
+    /// an empty transcript rather than recording anything.
+    /// </summary>
+    public Task<(string Transcript, string Reply)> AskVoiceAsync(uint maxDurationMs);
+
+    /// <summary>
     /// D-Bus <c>GetStatus(out a{sv} status)</c>: daemon status as a string→variant
     /// map. Currently carries <c>version</c> and <c>activeBackend</c> (the backend
     /// that served the most recent request: <c>"ollama"</c>, <c>"mistral"</c>, or

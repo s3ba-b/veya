@@ -158,6 +158,38 @@ public sealed record AuditEvent(DateTimeOffset Timestamp, string EventType, IRea
             });
 
     /// <summary>
+    /// A <c>voice.capture</c> event recording an <c>AskVoice</c> recording +
+    /// transcription attempt (ADR-0015): whether it succeeded, how long the
+    /// transcript was, and duration. Never the audio or the transcript text.
+    /// </summary>
+    public static AuditEvent VoiceCapture(bool success, int transcriptLength, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "voice.capture",
+            new Dictionary<string, object?>
+            {
+                ["success"] = success,
+                ["transcriptLength"] = transcriptLength,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
+
+    /// <summary>
+    /// A <c>voice.speak</c> event recording an <c>AskVoice</c> reply being
+    /// spoken aloud (ADR-0015): whether it succeeded, how long the spoken text
+    /// was, and duration. Never the text itself.
+    /// </summary>
+    public static AuditEvent VoiceSpeak(bool success, int textLength, TimeSpan duration) =>
+        new(
+            DateTimeOffset.UtcNow,
+            "voice.speak",
+            new Dictionary<string, object?>
+            {
+                ["success"] = success,
+                ["textLength"] = textLength,
+                ["durationMs"] = duration.TotalMilliseconds,
+            });
+
+    /// <summary>
     /// A <c>permission.decision</c> event recording the outcome of a per-source
     /// permission check (docs/security.md). Written by the permission gate for
     /// every check, granted or denied.

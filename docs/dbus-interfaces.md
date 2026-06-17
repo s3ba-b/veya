@@ -42,6 +42,17 @@ warning and continues running without this endpoint — see
 `Veya.Daemon.IDBusSessionConnector`.
 
 ```
+AskVoice(in u maxDurationMs, out s transcript, out s reply)
+```
+**Implemented**: (`Veya.Daemon.Veya1Service.AskVoiceAsync`, ADR-0015). Records
+up to `maxDurationMs` of microphone audio (the configured
+`Voice:MaxRecordingMs` default when 0), transcribes it locally, runs the
+transcript through the same model-router path as `Ask`, and speaks the reply
+aloud best-effort. Gated by the `Microphone` permission (default-deny); a
+denial returns an explanatory `reply` with an empty `transcript` and records
+nothing. Runs entirely in the Daemon — no McpServer round trip.
+
+```
 AskSession(in s sessionId, in s prompt, out s reply)        (planned)
 ```
 Multi-turn variant; empty `sessionId` creates a session and the reply is paired
