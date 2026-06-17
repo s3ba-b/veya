@@ -107,12 +107,15 @@ export default class VeyaExtension extends Extension {
 
         this._micButton = new St.Button({
             style_class: 'veya-mic-button',
-            child: new St.Icon({ icon_name: 'audio-input-microphone-symbolic', icon_size: 16 }),
+            child: new St.Icon({
+                icon_name: 'audio-input-microphone-symbolic',
+                icon_size: 16,
+            }),
             can_focus: true,
         });
         this._micButton.connect('clicked', () => this._submitVoice());
 
-        const inputRow = new St.BoxLayout({ style_class: 'veya-input-row' });
+        const inputRow = new St.BoxLayout({ style_class: 'veya-input-row', x_expand: true });
         inputRow.add_child(this._entry);
         inputRow.add_child(this._micButton);
 

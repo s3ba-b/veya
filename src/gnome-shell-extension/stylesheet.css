@@ -29,13 +29,10 @@
     spacing: 8px;
 }
 
-.veya-input-row .veya-entry {
-    width: 540px;
-}
-
 .veya-mic-button {
     border-radius: 8px;
-    padding: 9px;
+    width: 38px;
+    height: 38px;
     background-color: rgba(255, 255, 255, 0.07);
     border: 1px solid rgba(255, 255, 255, 0.13);
     color: #ebebeb;
