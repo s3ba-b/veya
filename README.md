@@ -37,7 +37,7 @@ Daemon  — sessions, context, model router (local Ollama first, Claude/Mistral 
 McpServer — Ubuntu system tools (read-only + permission-gated writes), behind a central safety layer
 ```
 
-Components live as separate projects in one .NET 9 solution: **Daemon**,
+Components live as separate projects in one .NET 10 solution: **Daemon**,
 **McpServer**, **Shared**, and **Overlay**, plus a GNOME Shell extension (GJS,
 not part of the .NET solution). See
 [docs/architecture.md](docs/architecture.md) for responsibilities, the full

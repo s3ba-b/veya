@@ -2,6 +2,9 @@
 
 - Status: accepted
 - Date: 2026-06-12
+- Superseded by: [ADR-0016](0016-dotnet-10-upgrade.md) (version number only —
+  the choice of C#/.NET below still stands; the target framework is now
+  .NET 10)
 
 ## Context
 

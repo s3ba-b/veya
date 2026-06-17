@@ -1,6 +1,6 @@
 # Architecture
 
-Veya is a set of cooperating processes in one .NET 9 solution. A central daemon
+Veya is a set of cooperating processes in one .NET 10 solution. A central daemon
 owns all intelligence; frontends are thin clients over D-Bus; system access is
 isolated in an MCP server behind a safety layer.
 
