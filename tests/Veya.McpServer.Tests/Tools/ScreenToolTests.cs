@@ -1,6 +1,7 @@
 using Veya.McpServer.Tools;
 using Veya.Shared.Permissions;
 using Veya.Shared.Safety;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.McpServer.Tests.Tools;
@@ -42,17 +43,6 @@ public class ScreenToolTests
         {
             CallCount++;
             return Task.FromResult(path);
-        }
-    }
-
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
         }
     }
 

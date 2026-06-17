@@ -1,5 +1,6 @@
 using Veya.Shared.Context;
 using Veya.Shared.Permissions;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Shared.Tests.Context;

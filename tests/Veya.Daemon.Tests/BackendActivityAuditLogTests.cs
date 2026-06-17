@@ -1,22 +1,12 @@
 using Veya.Shared;
 using Veya.Shared.Safety;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Daemon.Tests;
 
 public class BackendActivityAuditLogTests
 {
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Written { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Written.Add(auditEvent);
-            return Task.CompletedTask;
-        }
-    }
-
     private static AuditEvent Cloud(string backend = "mistral", string model = "mistral-large", int input = 12, int output = 34) =>
         AuditEvent.CloudRequest(backend, model, input, output, TimeSpan.FromMilliseconds(5));
 
@@ -32,8 +22,8 @@ public class BackendActivityAuditLogTests
         var permissionEvent = AuditEvent.PermissionDecision("clipboard", "ClipboardTool", granted: true);
         await log.WriteAsync(permissionEvent);
 
-        Assert.Single(inner.Written);
-        Assert.Same(permissionEvent, inner.Written[0]);
+        Assert.Single(inner.Events);
+        Assert.Same(permissionEvent, inner.Events[0]);
     }
 
     [Fact]

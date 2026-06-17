@@ -1,22 +1,12 @@
 using System.Diagnostics;
 using Veya.Shared.Safety;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Shared.Tests.Safety;
 
 public class SafeExecutorTests
 {
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
-        }
-    }
-
     // Best-effort cleanup of a detached survivor a test intentionally spawned.
     private static void KillSurvivor(string pattern)
     {

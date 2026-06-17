@@ -8,11 +8,6 @@ namespace Veya.Daemon.Tests;
 
 public class Veya1ServiceTests
 {
-    private sealed class FakeModelRouter(Func<string, Task<string>> respond) : IModelRouter
-    {
-        public Task<string> AskAsync(string prompt, CancellationToken cancellationToken = default) => respond(prompt);
-    }
-
     private sealed class FakeVoiceAskService(Func<uint, Task<(string Transcript, string Reply)>> respond) : IVoiceAskService
     {
         public Task<(string Transcript, string Reply)> AskAsync(uint maxDurationMs, CancellationToken cancellationToken = default) => respond(maxDurationMs);

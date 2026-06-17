@@ -3,6 +3,7 @@ using Veya.Shared.Inference;
 using Veya.Shared.Permissions;
 using Veya.Shared.Safety;
 using Veya.Shared.Voice;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Daemon.Tests;
@@ -56,22 +57,6 @@ public class VoiceAskServiceTests
             CallCount++;
             LastText = text;
             return Task.FromResult(succeeds);
-        }
-    }
-
-    private sealed class FakeModelRouter(Func<string, Task<string>> respond) : IModelRouter
-    {
-        public Task<string> AskAsync(string prompt, CancellationToken cancellationToken = default) => respond(prompt);
-    }
-
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
         }
     }
 

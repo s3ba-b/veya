@@ -12,11 +12,6 @@ public class DBusHostedServiceTests
         public Task<bool> TryRegisterAsync(IDBusObject service) => Task.FromResult(result);
     }
 
-    private sealed class FakeModelRouter : IModelRouter
-    {
-        public Task<string> AskAsync(string prompt, CancellationToken cancellationToken = default) =>
-            Task.FromResult($"Veya received: {prompt}");
-    }
 
     private sealed class FakeVoiceAskService : IVoiceAskService
     {
@@ -27,7 +22,7 @@ public class DBusHostedServiceTests
     [Fact]
     public async Task StartAsync_WhenSessionBusAvailable_CompletesSuccessfully()
     {
-        var hostedService = new DBusHostedService(new FakeConnector(true), new Veya1Service(new FakeModelRouter(), new FakeVoiceAskService(), new FakeBackendActivityMonitor()), NullLogger<DBusHostedService>.Instance);
+        var hostedService = new DBusHostedService(new FakeConnector(true), new Veya1Service(new FakeModelRouter(prompt => Task.FromResult($"Veya received: {prompt}")), new FakeVoiceAskService(), new FakeBackendActivityMonitor()), NullLogger<DBusHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
         await hostedService.StopAsync(CancellationToken.None);
@@ -38,7 +33,7 @@ public class DBusHostedServiceTests
     {
         // Hard rule #3: the daemon must keep running headless, just without
         // the D-Bus endpoint.
-        var hostedService = new DBusHostedService(new FakeConnector(false), new Veya1Service(new FakeModelRouter(), new FakeVoiceAskService(), new FakeBackendActivityMonitor()), NullLogger<DBusHostedService>.Instance);
+        var hostedService = new DBusHostedService(new FakeConnector(false), new Veya1Service(new FakeModelRouter(prompt => Task.FromResult($"Veya received: {prompt}")), new FakeVoiceAskService(), new FakeBackendActivityMonitor()), NullLogger<DBusHostedService>.Instance);
 
         await hostedService.StartAsync(CancellationToken.None);
         await hostedService.StopAsync(CancellationToken.None);

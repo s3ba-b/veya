@@ -1,22 +1,12 @@
 using Veya.Shared.Permissions;
 using Veya.Shared.Safety;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Shared.Tests.Permissions;
 
 public class PermissionGateTests
 {
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
-        }
-    }
-
     private sealed class FixedStore(bool granted) : IPermissionStore
     {
         public bool IsGranted(PermissionSource source) => granted;

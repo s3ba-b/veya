@@ -1,18 +1,13 @@
 using Veya.Daemon;
 using Veya.Shared.Notifications;
 using Veya.Shared.Permissions;
-using Veya.Shared.Safety;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Daemon.Tests;
 
 public class NotificationDigestContextProviderTests
 {
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default) => Task.CompletedTask;
-    }
-
     private sealed class FixedGate(bool granted) : IPermissionGate
     {
         public Task<bool> CheckAsync(PermissionSource source, string requester, CancellationToken cancellationToken = default) =>

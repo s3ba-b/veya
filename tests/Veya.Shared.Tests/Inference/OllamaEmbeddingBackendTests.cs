@@ -1,53 +1,15 @@
 using System.Net;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using Veya.Shared.Inference;
 using Veya.Shared.Safety;
+using Veya.TestSupport;
 using Xunit;
 
 namespace Veya.Shared.Tests.Inference;
 
 public class OllamaEmbeddingBackendTests
 {
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
-        }
-    }
-
-    private sealed class FakeHttpMessageHandler(string responseJson, HttpStatusCode statusCode = HttpStatusCode.OK) : HttpMessageHandler
-    {
-        public string? LastRequestBody { get; private set; }
-
-        public string? LastRequestUri { get; private set; }
-
-        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            LastRequestUri = request.RequestUri?.ToString();
-            if (request.Content is not null)
-            {
-                LastRequestBody = await request.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            }
-
-            return new HttpResponseMessage(statusCode)
-            {
-                Content = new StringContent(responseJson, Encoding.UTF8, "application/json"),
-            };
-        }
-    }
-
-    private sealed class ThrowingHttpMessageHandler : HttpMessageHandler
-    {
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) =>
-            throw new HttpRequestException("Connection refused");
-    }
-
     private static OllamaEmbeddingBackend CreateBackend(HttpMessageHandler handler, IAuditLog? auditLog = null, string model = "nomic-embed-text") =>
         new(new HttpClient(handler), auditLog ?? new RecordingAuditLog(), new OllamaOptions { EmbeddingModel = model });
 
@@ -63,7 +25,7 @@ public class OllamaEmbeddingBackendTests
         """;
 
         var auditLog = new RecordingAuditLog();
-        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson), auditLog);
+        var backend = CreateBackend(new CapturingHttpMessageHandler(responseJson), auditLog);
 
         var vectors = await backend.EmbedAsync(["hello", "world"]);
 
@@ -86,13 +48,12 @@ public class OllamaEmbeddingBackendTests
         {"embeddings": [[1.0]], "prompt_eval_count": 1}
         """;
 
-        var handler = new FakeHttpMessageHandler(responseJson);
+        var handler = new CapturingHttpMessageHandler(responseJson);
         var backend = CreateBackend(handler, model: "mxbai-embed-large");
 
         await backend.EmbedAsync(["one input"]);
 
-        Assert.NotNull(handler.LastRequestUri);
-        Assert.EndsWith("/api/embed", handler.LastRequestUri);
+        Assert.EndsWith("/api/embed", handler.LastRequest!.RequestUri!.ToString());
 
         using var body = JsonDocument.Parse(handler.LastRequestBody!);
         var root = body.RootElement;
@@ -124,7 +85,7 @@ public class OllamaEmbeddingBackendTests
     [Fact]
     public async Task EmbedAsync_ThrowsBackendUnavailable_OnErrorStatusCode()
     {
-        var backend = CreateBackend(new FakeHttpMessageHandler("model not found", HttpStatusCode.NotFound));
+        var backend = CreateBackend(new CapturingHttpMessageHandler("model not found", HttpStatusCode.NotFound));
 
         var ex = await Assert.ThrowsAsync<BackendUnavailableException>(() => backend.EmbedAsync(["hi"]));
         Assert.Contains("404", ex.Message);
@@ -137,7 +98,7 @@ public class OllamaEmbeddingBackendTests
         {"embeddings": [[0.1, 0.2]], "prompt_eval_count": 4}
         """;
 
-        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson));
+        var backend = CreateBackend(new CapturingHttpMessageHandler(responseJson));
 
         await Assert.ThrowsAsync<BackendUnavailableException>(() => backend.EmbedAsync(["a", "b"]));
     }

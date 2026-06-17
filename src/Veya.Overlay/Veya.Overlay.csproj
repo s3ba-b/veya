@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="GirCore.Adw-1" Version="0.7.0" />
+    <PackageReference Include="GirCore.Adw-1" />
   </ItemGroup>
 
   <ItemGroup>

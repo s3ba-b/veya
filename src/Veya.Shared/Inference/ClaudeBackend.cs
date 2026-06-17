@@ -2,6 +2,7 @@ using System.Net.Http;
 using System.Text.Json;
 using Anthropic;
 using Anthropic.Core;
+using Anthropic.Exceptions;
 using Anthropic.Models.Messages;
 
 namespace Veya.Shared.Inference;
@@ -50,7 +51,15 @@ public sealed class ClaudeBackend : IInferenceBackend
         var client = new AnthropicClient(options);
         var parameters = ToMessageCreateParams(request, _model);
 
-        var message = await client.Messages.Create(parameters, cancellationToken).ConfigureAwait(false);
+        Message message;
+        try
+        {
+            message = await client.Messages.Create(parameters, cancellationToken).ConfigureAwait(false);
+        }
+        catch (AnthropicException ex)
+        {
+            throw new BackendUnavailableException($"Veya can't reach the Claude API: {ex.Message}", ex);
+        }
 
         return ToInferenceResponse(message);
     }
