@@ -41,7 +41,9 @@ sudo apt-get install -y \
     libgtk-4-dev \
     libadwaita-1-dev \
     dbus-x11 \
-    tesseract-ocr
+    tesseract-ocr \
+    alsa-utils \
+    espeak-ng
 
 # ---- d-feet (optional D-Bus GUI debugger) ----
 # Not available in arm64 apt repos. Install manually if needed:
@@ -59,3 +61,5 @@ dotnet --version
 
 echo
 echo "Done. Build and test with: ./scripts/verify.sh"
+echo "Voice input (ADR-0015) needs a local Whisper model — fetch it with:"
+echo "  ./scripts/download-whisper-model.sh"

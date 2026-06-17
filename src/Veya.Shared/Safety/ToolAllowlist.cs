@@ -1,7 +1,9 @@
-using Veya.Shared.Safety;
+namespace Veya.Shared.Safety;
 
-namespace Veya.McpServer.Tools;
-
+/// <summary>
+/// Merges several tools' <see cref="CommandSpec"/> allowlists into the single
+/// dictionary an <see cref="ISafeExecutor"/> is constructed with.
+/// </summary>
 public static class ToolAllowlist
 {
     public static IReadOnlyDictionary<string, CommandSpec> Combine(params IReadOnlyDictionary<string, CommandSpec>[] allowlists)

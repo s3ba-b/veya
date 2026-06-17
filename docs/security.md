@@ -74,6 +74,10 @@ events through the same logging sink.
     (ADR-0011): returned count and duration only — never notification text.
   - `screen.capture` — a `read_screen_text` call (ADR-0013): success flag, extracted
     text length, duration — never the screenshot or the text.
+  - `voice.capture` — an `AskVoice` recording + transcription attempt (ADR-0015):
+    success flag, transcript length, duration — never the audio or the transcript.
+  - `voice.speak` — an `AskVoice` reply spoken aloud (ADR-0015): success flag,
+    spoken text length, duration — never the text.
   - `permission.decision` — every per-source permission check, granted or denied:
     source, requester, `granted` flag.
 - Readable by the user, surfaced in the UI later; the `CloudUsage` and
@@ -86,7 +90,8 @@ events through the same logging sink.
 
 ## Per-source permissions
 
-Every context source — clipboard, files, notifications, screen, personal index —
+Every context source — clipboard, files, notifications, screen, personal index,
+microphone —
 has an independent permission the user grants per source (and later per app).
 Defaults are deny. Decisions are audit-logged. No source is read "because it was
 convenient"; ingestion and query both check permissions.
@@ -117,6 +122,14 @@ still decline. Capture is on-demand and ephemeral — the screenshot is OCR'd an
 deleted immediately, nothing is persisted or indexed, and the `screen.capture`
 event carries only a success flag, extracted text length, and duration — never
 the image or the text.
+
+Voice input (ADR-0015) is gated the same way: the D-Bus `AskVoice` method
+checks the `Microphone` permission before any recording starts; denied means
+nothing is recorded. Capture is on-demand and bounded by `Voice:MaxRecordingMs` —
+the recorded audio is transcribed locally and deleted immediately, nothing is
+persisted or indexed. Speaking the reply aloud (`espeak-ng`) is **not**
+separately gated — it's the assistant's own already-computed answer, the audio
+equivalent of showing the reply in the overlay, not a new data source.
 
 ## Cloud transparency
 

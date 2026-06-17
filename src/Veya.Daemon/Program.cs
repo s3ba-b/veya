@@ -1,11 +1,13 @@
 using Microsoft.Extensions.Options;
 using Veya.Daemon;
 using Veya.Daemon.Mcp;
+using Veya.Daemon.Voice;
 using Veya.Shared.Context;
 using Veya.Shared.Inference;
 using Veya.Shared.Notifications;
 using Veya.Shared.Permissions;
 using Veya.Shared.Safety;
+using Veya.Shared.Voice;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddSystemd();
@@ -92,6 +94,26 @@ builder.Services.AddSingleton<IContextProvider>(sp => new CompositeContextProvid
     new ContextRetrievalProvider(sp.GetRequiredService<ContextRetriever>()),
     new NotificationDigestContextProvider(sp.GetRequiredService<NotificationDigestService>()),
 ]));
+
+// Voice I/O (ADR-0015): local Whisper.net STT + espeak-ng TTS. Both run
+// through their own ISafeExecutor instance, separate from McpServer's — its
+// allowlist only needs arecord/espeak-ng, and its timeout must cover
+// Voice:MaxRecordingMs, well past McpServer's 5s default. Inert until
+// Permissions:Microphone is granted and the Whisper model has been fetched
+// (scripts/download-whisper-model.sh).
+builder.Services.Configure<VoiceOptions>(builder.Configuration.GetSection("Voice"));
+builder.Services.AddSingleton(sp => sp.GetRequiredService<IOptions<VoiceOptions>>().Value);
+builder.Services.AddSingleton<ISafeExecutor>(sp =>
+{
+    var voiceOptions = sp.GetRequiredService<VoiceOptions>();
+    var allowlist = ToolAllowlist.Combine(AlsaAudioRecorder.Allowlist, EspeakTextToSpeech.Allowlist);
+    var timeout = TimeSpan.FromMilliseconds(voiceOptions.MaxRecordingMs) + TimeSpan.FromSeconds(5);
+    return new SafeExecutor(allowlist, sp.GetRequiredService<IAuditLog>(), timeout);
+});
+builder.Services.AddSingleton<IAudioRecorder, AlsaAudioRecorder>();
+builder.Services.AddSingleton<ISpeechToText, WhisperNetTranscriber>();
+builder.Services.AddSingleton<ITextToSpeech, EspeakTextToSpeech>();
+builder.Services.AddSingleton<IVoiceAskService, VoiceAskService>();
 
 builder.Services.AddSingleton<IModelRouter, ModelRouter>();
 builder.Services.AddSingleton<Veya1Service>();

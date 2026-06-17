@@ -87,6 +87,39 @@ The reply is the model's answer. With no inference backend reachable (no Ollama
 running and no cloud API key configured), `Ask` returns a plain-text error
 instead: `Veya can't reach its model backend right now: …`.
 
+## Voice (permission-gated)
+
+`AskVoice` (ADR-0015) is the voice equivalent of `Ask`: it records a question,
+transcribes it locally, answers it, and speaks the reply aloud. It's
+**default-deny**, like every other source:
+
+```sh
+export Permissions__Microphone=true
+```
+
+Set this in the Daemon's own environment (voice runs in the Daemon, not
+McpServer — there's no compositor/portal involved, just `arecord`). You also
+need:
+
+- `alsa-utils` and `espeak-ng` installed (`./scripts/setup-dev.sh` does this).
+- A local Whisper model fetched once: `./scripts/download-whisper-model.sh`
+  (downloads the multilingual `ggml-base.bin` to
+  `~/.local/share/veya/models/` by default). Without it, `AskVoice` still
+  records but reports that it didn't catch any words — no crash.
+
+Try it:
+
+```sh
+gdbus call --session --dest org.veya.Veya1 \
+  --object-path /org/veya/Veya1 --method org.veya.Veya1.AskVoice 8000
+```
+
+Speak within the given window (milliseconds; capped by `Voice:MaxRecordingMs`,
+default 15000). The call returns `(transcript, reply)`, and you should hear
+the reply spoken back. With the permission unset or `false`, nothing is
+recorded — `AskVoice` returns immediately with an explanatory reply and an
+empty transcript.
+
 ## Run as a systemd user service
 
 The daemon integrates with systemd via

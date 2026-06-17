@@ -13,6 +13,10 @@
     <PackageReference Include="Microsoft.Extensions.Hosting.Systemd" Version="9.0.0" />
     <PackageReference Include="ModelContextProtocol" Version="1.4.0" />
     <PackageReference Include="Tmds.DBus" Version="0.94.1" />
+    <!-- Local speech-to-text (ADR-0015): in-process whisper.cpp binding, no
+         apt dependency. Needs a separately-fetched ggml model (Voice:WhisperModelPath). -->
+    <PackageReference Include="Whisper.net" Version="1.7.4" />
+    <PackageReference Include="Whisper.net.Runtime" Version="1.7.4" />
   </ItemGroup>
 
   <ItemGroup>

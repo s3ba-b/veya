@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
+using Veya.Daemon.Voice;
 using Veya.Shared.Inference;
 using Xunit;
 
@@ -11,6 +12,12 @@ public class DBusSessionConnectorTests
         public Task<string> AskAsync(string prompt, CancellationToken cancellationToken = default) => Task.FromResult(prompt);
     }
 
+    private sealed class FakeVoiceAskService : IVoiceAskService
+    {
+        public Task<(string Transcript, string Reply)> AskAsync(uint maxDurationMs, CancellationToken cancellationToken = default) =>
+            Task.FromResult((string.Empty, string.Empty));
+    }
+
     [Fact]
     public async Task TryRegisterAsync_MatchesSessionBusAvailability()
     {
@@ -21,7 +28,7 @@ public class DBusSessionConnectorTests
         var hasSessionBus = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DBUS_SESSION_BUS_ADDRESS"));
 
         using var connector = new DBusSessionConnector(NullLogger<DBusSessionConnector>.Instance);
-        var registered = await connector.TryRegisterAsync(new Veya1Service(new FakeModelRouter(), new FakeBackendActivityMonitor()));
+        var registered = await connector.TryRegisterAsync(new Veya1Service(new FakeModelRouter(), new FakeVoiceAskService(), new FakeBackendActivityMonitor()));
 
         Assert.Equal(hasSessionBus, registered);
     }
