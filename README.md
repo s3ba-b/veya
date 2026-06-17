@@ -58,6 +58,12 @@ D-Bus `Ask`, MCP read-only tools, local + cloud inference, clipboard writes,
 personal context index, and notification intelligence. Milestone 4 (voice,
 screen awareness, GNOME shell extension) is in progress.
 
+## Website
+
+The project website ([veya-project.org](https://veya-project.org)) lives in
+[site/](site/) and deploys via
+[.github/workflows/deploy-site.yml](.github/workflows/deploy-site.yml).
+
 ## Building
 
 ```sh
