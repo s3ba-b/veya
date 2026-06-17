@@ -17,10 +17,15 @@ const DBUS_NAME = 'org.veya.Veya1';
 const DBUS_PATH = '/org/veya/Veya1';
 const DBUS_IFACE = 'org.veya.Veya1';
 const ASK_TIMEOUT_MS = 60_000;
+// AskVoice blocks server-side for the recording window plus transcription,
+// answering, and speaking — give it more headroom than a typed Ask.
+const VOICE_MAX_DURATION_MS = 8_000;
+const VOICE_CALL_TIMEOUT_MS = VOICE_MAX_DURATION_MS + ASK_TIMEOUT_MS;
 
 export default class VeyaExtension extends Extension {
     _panel = null;
     _entry = null;
+    _micButton = null;
     _spinner = null;
     _cloudBadge = null;
     _reply = null;
@@ -73,6 +78,7 @@ export default class VeyaExtension extends Extension {
             this._panel = null;
         }
         this._entry = null;
+        this._micButton = null;
         this._spinner = null;
         this._cloudBadge = null;
         this._reply = null;
@@ -98,6 +104,17 @@ export default class VeyaExtension extends Extension {
             x_expand: true,
         });
         this._entry.clutter_text.connect('activate', () => this._submit());
+
+        this._micButton = new St.Button({
+            style_class: 'veya-mic-button',
+            child: new St.Icon({ icon_name: 'audio-input-microphone-symbolic', icon_size: 16 }),
+            can_focus: true,
+        });
+        this._micButton.connect('clicked', () => this._submitVoice());
+
+        const inputRow = new St.BoxLayout({ style_class: 'veya-input-row' });
+        inputRow.add_child(this._entry);
+        inputRow.add_child(this._micButton);
 
         const statusRow = new St.BoxLayout({ style_class: 'veya-status-row' });
 
@@ -126,7 +143,7 @@ export default class VeyaExtension extends Extension {
         this._reply.clutter_text.set_selectable(true);
         this._reply.clutter_text.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
 
-        this._panel.add_child(this._entry);
+        this._panel.add_child(inputRow);
         this._panel.add_child(statusRow);
         this._panel.add_child(this._reply);
 
@@ -237,6 +254,7 @@ export default class VeyaExtension extends Extension {
         if (!prompt) return;
 
         this._entry.reactive = false;
+        this._micButton.reactive = false;
         this._spinner.visible = true;
         this._reply.visible = false;
         this._cloudBadge.visible = false;
@@ -250,6 +268,7 @@ export default class VeyaExtension extends Extension {
         } finally {
             this._spinner.visible = false;
             this._entry.reactive = true;
+            this._micButton.reactive = true;
         }
     }
 
@@ -269,6 +288,61 @@ export default class VeyaExtension extends Extension {
                     try {
                         const [reply] = conn.call_finish(result).deep_unpack();
                         resolve(reply);
+                    } catch (e) {
+                        reject(e);
+                    }
+                },
+            );
+        });
+    }
+
+    _submitVoice() {
+        this._submitVoiceAsync().catch(e => {
+            if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED)) {
+                logError(e, 'Veya extension: AskVoice failed');
+                this._showReply(`Error: ${e.message}`);
+            }
+        });
+    }
+
+    async _submitVoiceAsync() {
+        this._entry.reactive = false;
+        this._micButton.reactive = false;
+        this._spinner.text = 'Listening…';
+        this._spinner.visible = true;
+        this._reply.visible = false;
+        this._cloudBadge.visible = false;
+
+        this._cancellable?.cancel();
+        this._cancellable = new Gio.Cancellable();
+
+        try {
+            const { transcript, reply } = await this._askVoice(VOICE_MAX_DURATION_MS, this._cancellable);
+            this._showReply(transcript ? `🎤 "${transcript}"\n\n${reply}` : reply);
+        } finally {
+            this._spinner.visible = false;
+            this._spinner.text = 'Thinking…';
+            this._entry.reactive = true;
+            this._micButton.reactive = true;
+        }
+    }
+
+    _askVoice(maxDurationMs, cancellable) {
+        return new Promise((resolve, reject) => {
+            Gio.DBus.session.call(
+                DBUS_NAME,
+                DBUS_PATH,
+                DBUS_IFACE,
+                'AskVoice',
+                new GLib.Variant('(u)', [maxDurationMs]),
+                new GLib.VariantType('(ss)'),
+                Gio.DBusCallFlags.NONE,
+                VOICE_CALL_TIMEOUT_MS,
+                cancellable,
+                (conn, result) => {
+                    try {
+                        const [transcript, reply] = conn.call_finish(result).deep_unpack();
+                        resolve({ transcript, reply });
                     } catch (e) {
                         reject(e);
                     }

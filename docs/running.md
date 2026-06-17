@@ -190,8 +190,9 @@ is available, the response area shows "Veya is unreachable: ...".
 
 The GNOME Shell extension (`src/gnome-shell-extension/`, ADR-0014) adds a
 keyboard-summoned floating panel and a top-bar button. Like the Overlay it is a
-thin D-Bus client of `org.veya.Veya1` — it calls `Ask` and subscribes to
-`CloudUsage` for the in-panel cloud badge; no intelligence runs on this side.
+thin D-Bus client of `org.veya.Veya1` — it calls `Ask` (or `AskVoice` via the
+panel's mic button, ADR-0015) and subscribes to `CloudUsage` for the in-panel
+cloud badge; no intelligence runs on this side.
 
 Requires **GNOME Shell 45+** (Ubuntu 24.04 or later) — it uses ES-module
 syntax that earlier shells don't support.
@@ -211,6 +212,12 @@ With the daemon running, summon the panel with **`Super+Shift+V`** (toggles it),
 or click the Veya button in the top bar. Type a prompt and press Enter; the
 panel shows "Thinking…" while the `Ask` call is in flight, then the reply. If a
 request reaches a cloud backend, a cloud badge appears in the panel.
+
+Click the mic button next to the entry to ask by voice instead (requires
+`Permissions__Microphone=true` and the Whisper model — see "Voice" above). The
+panel shows "Listening…" while `AskVoice` is in flight (it blocks for the
+recording window plus transcription/answering/speaking), then shows both the
+heard transcript and the reply.
 
 Change the summon shortcut:
 
