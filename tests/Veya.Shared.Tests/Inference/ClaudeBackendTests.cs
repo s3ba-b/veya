@@ -3,7 +3,6 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using Veya.Shared.Inference;
-using Veya.Shared.Safety;
 using Xunit;
 
 namespace Veya.Shared.Tests.Inference;
@@ -13,17 +12,6 @@ public class ClaudeBackendTests
     private sealed class FakeApiKeyProvider(string? apiKey) : IApiKeyProvider
     {
         public Task<string?> GetApiKeyAsync(CancellationToken cancellationToken = default) => Task.FromResult(apiKey);
-    }
-
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
-        }
     }
 
     private sealed class FakeHttpMessageHandler(string responseJson) : HttpMessageHandler
@@ -38,7 +26,7 @@ public class ClaudeBackendTests
     [Fact]
     public async Task CompleteAsync_ThrowsBackendUnavailableWhenNoApiKey()
     {
-        var backend = new ClaudeBackend(new FakeApiKeyProvider(null), new RecordingAuditLog(), "claude-sonnet-4-6");
+        var backend = new ClaudeBackend(new FakeApiKeyProvider(null), "claude-sonnet-4-6");
 
         var request = new InferenceRequest(
             SystemPrompt: null,
@@ -49,7 +37,7 @@ public class ClaudeBackendTests
     }
 
     [Fact]
-    public async Task CompleteAsync_MapsTextResponseAndWritesAuditEvent()
+    public async Task CompleteAsync_MapsTextResponse()
     {
         const string responseJson = """
         {
@@ -65,8 +53,7 @@ public class ClaudeBackendTests
         """;
 
         using var httpClient = new HttpClient(new FakeHttpMessageHandler(responseJson));
-        var auditLog = new RecordingAuditLog();
-        var backend = new ClaudeBackend(new FakeApiKeyProvider("sk-test-123"), auditLog, "claude-sonnet-4-6", httpClient);
+        var backend = new ClaudeBackend(new FakeApiKeyProvider("sk-test-123"), "claude-sonnet-4-6", httpClient);
 
         var request = new InferenceRequest(
             SystemPrompt: "You are Veya.",
@@ -80,15 +67,6 @@ public class ClaudeBackendTests
         Assert.Equal("Hello there.", Assert.IsType<TextBlock>(response.Message.Content[0]).Text);
         Assert.Equal(12, response.InputTokens);
         Assert.Equal(7, response.OutputTokens);
-
-        var auditEvent = Assert.Single(auditLog.Events);
-        Assert.Equal("cloud.request", auditEvent.EventType);
-        var allowedKeys = new[] { "backend", "model", "inputTokens", "outputTokens", "durationMs" };
-        Assert.Equal(allowedKeys.Length, auditEvent.Fields.Count);
-        Assert.Equal("claude", auditEvent.Fields["backend"]);
-        Assert.Equal("claude-sonnet-4-6", auditEvent.Fields["model"]);
-        Assert.Equal(12, auditEvent.Fields["inputTokens"]);
-        Assert.Equal(7, auditEvent.Fields["outputTokens"]);
     }
 
     [Fact]
@@ -108,7 +86,7 @@ public class ClaudeBackendTests
         """;
 
         using var httpClient = new HttpClient(new FakeHttpMessageHandler(responseJson));
-        var backend = new ClaudeBackend(new FakeApiKeyProvider("sk-test-123"), new RecordingAuditLog(), "claude-sonnet-4-6", httpClient);
+        var backend = new ClaudeBackend(new FakeApiKeyProvider("sk-test-123"), "claude-sonnet-4-6", httpClient);
 
         var schema = JsonDocument.Parse("""{"type":"object","properties":{"path":{"type":"string"}}}""").RootElement;
         var request = new InferenceRequest(

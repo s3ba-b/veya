@@ -4,7 +4,6 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using Veya.Shared.Inference;
-using Veya.Shared.Safety;
 using Xunit;
 
 namespace Veya.Shared.Tests.Inference;
@@ -14,17 +13,6 @@ public class MistralBackendTests
     private sealed class FakeApiKeyProvider(string? apiKey) : IApiKeyProvider
     {
         public Task<string?> GetApiKeyAsync(CancellationToken cancellationToken = default) => Task.FromResult(apiKey);
-    }
-
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
-        }
     }
 
     private sealed class FakeHttpMessageHandler(string responseJson, HttpStatusCode statusCode = HttpStatusCode.OK) : HttpMessageHandler
@@ -56,13 +44,12 @@ public class MistralBackendTests
 
     private static MistralBackend CreateBackend(
         HttpMessageHandler handler,
-        IAuditLog? auditLog = null,
         string? apiKey = "mk-test-123",
         string model = "mistral-large-latest") =>
-        new(new HttpClient(handler), new FakeApiKeyProvider(apiKey), auditLog ?? new RecordingAuditLog(), new MistralOptions { Model = model });
+        new(new HttpClient(handler), new FakeApiKeyProvider(apiKey), new MistralOptions { Model = model });
 
     [Fact]
-    public async Task CompleteAsync_MapsTextResponseAndWritesCloudRequestAuditEvent()
+    public async Task CompleteAsync_MapsTextResponse()
     {
         const string responseJson = """
         {
@@ -71,8 +58,7 @@ public class MistralBackendTests
         }
         """;
 
-        var auditLog = new RecordingAuditLog();
-        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson), auditLog);
+        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson));
 
         var request = new InferenceRequest(
             SystemPrompt: "You are Veya.",
@@ -86,15 +72,6 @@ public class MistralBackendTests
         Assert.Equal("Hello there.", Assert.IsType<TextBlock>(response.Message.Content[0]).Text);
         Assert.Equal(12, response.InputTokens);
         Assert.Equal(7, response.OutputTokens);
-
-        var auditEvent = Assert.Single(auditLog.Events);
-        Assert.Equal("cloud.request", auditEvent.EventType);
-        var allowedKeys = new[] { "backend", "model", "inputTokens", "outputTokens", "durationMs" };
-        Assert.Equal(allowedKeys.Length, auditEvent.Fields.Count);
-        Assert.Equal("mistral", auditEvent.Fields["backend"]);
-        Assert.Equal("mistral-large-latest", auditEvent.Fields["model"]);
-        Assert.Equal(12, auditEvent.Fields["inputTokens"]);
-        Assert.Equal(7, auditEvent.Fields["outputTokens"]);
     }
 
     [Fact]

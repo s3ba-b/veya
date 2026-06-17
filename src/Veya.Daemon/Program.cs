@@ -24,7 +24,13 @@ builder.Services.AddSingleton<IInferenceBackend>(sp =>
 {
     var auditLog = sp.GetRequiredService<IAuditLog>();
     var inference = sp.GetRequiredService<IOptions<InferenceOptions>>().Value;
-    var local = new OllamaBackend(new HttpClient(), auditLog, sp.GetRequiredService<IOptions<OllamaOptions>>().Value);
+    var ollamaOptions = sp.GetRequiredService<IOptions<OllamaOptions>>().Value;
+
+    // Audit logging is layered on by AuditingInferenceBackend (issue #89), the
+    // single source of truth for the inference audit path: local.request for the
+    // on-machine Ollama backend, cloud.request for the config-selected cloud one.
+    IInferenceBackend local = new AuditingInferenceBackend(
+        new OllamaBackend(new HttpClient(), ollamaOptions), auditLog, "ollama", ollamaOptions.Model, isLocal: true);
 
     // API keys resolve from IConfiguration first (dotnet user-secrets in dev,
     // ADR-0008), falling back to the documented flat env var for the service.
@@ -33,14 +39,17 @@ builder.Services.AddSingleton<IInferenceBackend>(sp =>
         new ConfigurationApiKeyProvider(config, configKey, new EnvironmentApiKeyProvider(envVar));
 
     // Cloud backend is config-selectable (ADR-0008): Mistral by default, Claude opt-in.
-    IInferenceBackend cloud = inference.CloudBackend.ToLowerInvariant() switch
+    var mistralOptions = sp.GetRequiredService<IOptions<MistralOptions>>().Value;
+    (IInferenceBackend Backend, string Name, string Model) cloud = inference.CloudBackend.ToLowerInvariant() switch
     {
-        "claude" => new ClaudeBackend(KeyProvider("Anthropic:ApiKey", "ANTHROPIC_API_KEY"), auditLog, inference.ClaudeModel),
-        "mistral" => new MistralBackend(new HttpClient(), KeyProvider("Mistral:ApiKey", "MISTRAL_API_KEY"), auditLog, sp.GetRequiredService<IOptions<MistralOptions>>().Value),
+        "claude" => (new ClaudeBackend(KeyProvider("Anthropic:ApiKey", "ANTHROPIC_API_KEY"), inference.ClaudeModel), "claude", inference.ClaudeModel),
+        "mistral" => (new MistralBackend(new HttpClient(), KeyProvider("Mistral:ApiKey", "MISTRAL_API_KEY"), mistralOptions), "mistral", mistralOptions.Model),
         var other => throw new InvalidOperationException($"Unknown Inference:CloudBackend '{other}'. Expected 'mistral' or 'claude'."),
     };
 
-    return new FallbackInferenceBackend(local, cloud);
+    IInferenceBackend auditedCloud = new AuditingInferenceBackend(cloud.Backend, auditLog, cloud.Name, cloud.Model, isLocal: false);
+
+    return new FallbackInferenceBackend(local, auditedCloud);
 });
 builder.Services.Configure<McpServerOptions>(builder.Configuration.GetSection("Mcp"));
 builder.Services.AddSingleton<IMcpToolGateway, McpToolGateway>();
@@ -88,12 +97,14 @@ builder.Services.AddSingleton(sp => new NotificationDigestService(
     sp.GetRequiredService<IPermissionGate>(),
     sp.GetRequiredService<IAuditLog>()));
 
-// Ask folds in both the personal context index (ADR-0009) and the notification
-// digest (ADR-0011), each degrading to "no context" independently.
-builder.Services.AddSingleton<IContextProvider>(sp => new CompositeContextProvider([
-    new ContextRetrievalProvider(sp.GetRequiredService<ContextRetriever>()),
-    new NotificationDigestContextProvider(sp.GetRequiredService<NotificationDigestService>()),
-]));
+// Ask folds in every registered IContextProvider (ADR-0009 personal index,
+// ADR-0011 notification digest, …), each degrading to "no context"
+// independently. New sources register one more IContextProvider line here; the
+// composite is assembled from the lot at the router below (issue #89, OCP).
+builder.Services.AddSingleton<IContextProvider>(sp =>
+    new ContextRetrievalProvider(sp.GetRequiredService<ContextRetriever>()));
+builder.Services.AddSingleton<IContextProvider>(sp =>
+    new NotificationDigestContextProvider(sp.GetRequiredService<NotificationDigestService>()));
 
 // Voice I/O (ADR-0015): local Whisper.net STT + espeak-ng TTS. Both run
 // through their own ISafeExecutor instance, separate from McpServer's — its
@@ -115,7 +126,12 @@ builder.Services.AddSingleton<ISpeechToText, WhisperNetTranscriber>();
 builder.Services.AddSingleton<ITextToSpeech, EspeakTextToSpeech>();
 builder.Services.AddSingleton<IVoiceAskService, VoiceAskService>();
 
-builder.Services.AddSingleton<IModelRouter, ModelRouter>();
+// The composite is built inline (not registered as IContextProvider), so
+// GetServices returns only the leaf providers — no self-recursion.
+builder.Services.AddSingleton<IModelRouter>(sp => new ModelRouter(
+    sp.GetRequiredService<IInferenceBackend>(),
+    sp.GetRequiredService<IMcpToolGateway>(),
+    new CompositeContextProvider(sp.GetServices<IContextProvider>().ToList())));
 builder.Services.AddSingleton<Veya1Service>();
 builder.Services.AddHostedService<DBusHostedService>();
 builder.Services.AddHostedService<ContextIndexingService>();
