@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Veya — Privacy-transparent AI assistant for Linux</title>
+  <meta name="description" content="Veya is an open-source, privacy-transparent, system-wide AI assistant for Ubuntu/Linux — an Apple Intelligence alternative built local-first." />
+
+  <link rel="canonical" href="https://veya-project.org/" />
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://veya-project.org/" />
+  <meta property="og:title" content="Veya — Privacy-transparent AI assistant for Linux" />
+  <meta property="og:description" content="An open-source, system-wide AI assistant for Ubuntu/Linux. Local-first, transparent, system-wide." />
+  <meta property="og:image" content="https://veya-project.org/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Veya — Privacy-transparent AI assistant for Linux" />
+  <meta name="twitter:description" content="An open-source, system-wide AI assistant for Ubuntu/Linux. Local-first, transparent, system-wide." />
+  <meta name="twitter:image" content="https://veya-project.org/og-image.png" />
+  <meta name="theme-color" content="#0b0e14" />
+
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip-link" href="#top">Skip to content</a>
+  <header class="site-header">
+    <nav class="nav container">
+      <a class="brand" href="#top" aria-label="Veya home">
+        <img src="favicon.svg" alt="" class="brand-mark" width="28" height="28" />
+        <span class="brand-name">Veya</span>
+      </a>
+      <div class="nav-links">
+        <a href="#why">Why</a>
+        <a href="#demo">Demo</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#roadmap">Roadmap</a>
+        <a class="btn btn-ghost" href="https://github.com/s3ba-b/veya" rel="noopener">GitHub</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero container">
+      <span class="pill">M1–M3 done · M4 in progress · open source</span>
+      <h1>The AI assistant for Linux that <span class="grad">never hides</span> what leaves your machine.</h1>
+      <p class="lede">
+        Ask anything about your Linux system and get answers grounded in real data —
+        while seeing exactly what, if anything, leaves your machine. Veya is an
+        open-source, local-first AI assistant for Ubuntu/Linux: an Apple Intelligence
+        alternative that runs on local models first and logs every cloud call.
+      </p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/s3ba-b/veya" rel="noopener">View on GitHub</a>
+        <a class="btn btn-ghost" href="#architecture">How it works</a>
+      </div>
+
+      <div class="hero-terminal" role="img" aria-label="Example interaction with Veya">
+        <div class="term-bar"><span></span><span></span><span></span></div>
+        <pre class="term-body"><span class="term-prompt">you ›</span> anything urgent in my notifications?
+
+<span class="term-veya">veya ›</span> Yes — a failing CI run on veya#214 and a 3pm
+        meeting that moved to 4. The rest can wait.
+<span class="term-dim">       ↳ Mistral (cloud) · 0.9 KB sent · logged to audit</span></pre>
+      </div>
+    </section>
+
+    <!-- Demo -->
+    <section id="demo" class="container section">
+      <h2 class="section-title">See it in action</h2>
+      <p class="section-sub">A global overlay — summon it anywhere, ask anything about your system, get an answer backed by real data.</p>
+
+      <div class="demo-carousel">
+        <input type="radio" name="demo-slide" id="ds1" checked />
+        <input type="radio" name="demo-slide" id="ds2" />
+        <input type="radio" name="demo-slide" id="ds3" />
+
+        <div class="demo-slides">
+          <figure class="demo-slide">
+            <img src="demos/1.webp" width="1920" height="1280" alt="Veya overlay appearing on a Linux desktop with an empty search bar" />
+            <figcaption>1 — Invoke Veya anywhere with a keyboard shortcut</figcaption>
+          </figure>
+          <figure class="demo-slide">
+            <img src="demos/2.webp" width="1920" height="1280" loading="lazy" alt="Question typed into the overlay: 'What takes the most RAM on my PC?' — response loading" />
+            <figcaption>2 — Ask anything about your machine</figcaption>
+          </figure>
+          <figure class="demo-slide">
+            <img src="demos/3.webp" width="1920" height="1280" loading="lazy" alt="Veya answer showing top 10 processes by RAM usage with a summary" />
+            <figcaption>3 — Get a grounded answer drawn from live system data</figcaption>
+          </figure>
+        </div>
+
+        <div class="demo-dots">
+          <label for="ds1" aria-label="Step 1"></label>
+          <label for="ds2" aria-label="Step 2"></label>
+          <label for="ds3" aria-label="Step 3"></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Why / pillars -->
+    <section id="why" class="container section">
+      <h2 class="section-title">Built around three commitments</h2>
+      <div class="cards">
+        <article class="card">
+          <div class="card-icon">🔒</div>
+          <h3>Local-first privacy</h3>
+          <p>
+            Local models are first-class. Every source of context — clipboard,
+            files, notifications, screen — is gated by per-source permissions,
+            default-deny.
+          </p>
+        </article>
+        <article class="card">
+          <div class="card-icon">👁️</div>
+          <h3>Transparency</h3>
+          <p>
+            An audit log records every tool invocation and every byte sent to a
+            cloud backend. Cloud usage is always user-visible, surfaced live over
+            D-Bus.
+          </p>
+        </article>
+        <article class="card">
+          <div class="card-icon">🧩</div>
+          <h3>System-wide, not app-bound</h3>
+          <p>
+            One daemon, one D-Bus contract (<code>org.veya.Veya1</code>), any
+            number of frontends — GTK4 overlay window, GNOME Shell extension
+            (keyboard summon), CLI, or your own client.
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Architecture -->
+    <section id="architecture" class="container section">
+      <h2 class="section-title">Architecture at a glance</h2>
+      <p class="section-sub">
+        A central daemon owns all intelligence. Frontends are thin clients over
+        D-Bus; system access is isolated in an MCP server behind a safety layer.
+      </p>
+
+      <div class="diagram" role="img" aria-label="Veya architecture diagram">
+        <pre class="mermaid">
+---
+config:
+  theme: base
+  themeVariables:
+    background: '#0b0e14'
+    mainBkg: '#151a26'
+    primaryColor: '#151a26'
+    primaryBorderColor: '#232a3a'
+    primaryTextColor: '#e6e9f0'
+    lineColor: '#6ea8fe'
+    edgeLabelBackground: '#0b0e14'
+    clusterBkg: '#11151f'
+    clusterBorder: '#232a3a'
+    titleColor: '#e6e9f0'
+    fontFamily: 'ui-sans-serif, system-ui, sans-serif'
+    fontSize: '13px'
+---
+flowchart TD
+    subgraph FE[Frontends]
+        UI["Overlay UI\nGTK4 / Gir.Core"]
+        GS["GNOME Shell ext\nGJS · keyboard summon"]
+        CLI[CLI]
+    end
+
+    subgraph D["Daemon — Veya.Daemon"]
+        DCore["sessions · context\nper-source permissions · audit log"]
+        Router["model router · FallbackInferenceBackend"]
+        Ctx["personal context index\nSQLite + sqlite-vec · local embeddings"]
+        Notif["notification intelligence\ncapture · digest · answer"]
+        DCore --> Router
+        DCore --- Ctx
+        DCore --- Notif
+    end
+
+    FE -->|"D-Bus · org.veya.Veya1"| D
+
+    Router --> Ollama["Ollama\nlocal · no cloud egress"]:::local
+    Router --> Mistral["Mistral (default)\ncloud · user-visible"]:::cloud
+    Router --> Claude["Claude (optional)\ncloud · user-visible"]:::cloud
+
+    D -->|"MCP over stdio"| MCP["McpServer — Veya.McpServer\nread-only: system info · processes · memory/disk · journald · APT · systemd\nwrite (permission-gated): set_clipboard · read_screen_text\nsafety layer: allowlist · timeouts · output caps · audit log"]
+
+    MCP --> OS["Ubuntu system\nunprivileged · polkit later"]
+
+    classDef local fill:#0d1a12,stroke:#4ade80,color:#4ade80
+    classDef cloud fill:#130d1f,stroke:#b388ff,color:#b388ff
+        </pre>
+      </div>
+
+      <div class="comp-grid">
+        <div class="comp">
+          <h4>Daemon</h4>
+          <p>Long-running user service. Owns sessions, context, permissions, the audit log, and the model router. Local-first <code>FallbackInferenceBackend</code>: try Ollama, fall back to the configured cloud backend (Mistral by default, Claude optional). Folds personal context and notification digest into every answer.</p>
+        </div>
+        <div class="comp">
+          <h4>McpServer</h4>
+          <p>System-action layer over the MCP protocol. Read-only tools: system info, processes, memory/disk, journald, APT, systemd. Write tools: <code>set_clipboard</code> and <code>read_screen_text</code> (screen awareness) — both permission-gated behind the central safety layer.</p>
+        </div>
+        <div class="comp">
+          <h4>Personal context + notifications</h4>
+          <p>Personal context index grounds answers in user-approved files via local embeddings + SQLite/sqlite-vec. Notification intelligence captures and digests desktop notifications. Both permission-checked, both degrade gracefully when denied.</p>
+        </div>
+        <div class="comp">
+          <h4>Safety layer</h4>
+          <p>Every shell command goes through an allowlist, timeouts, output caps, and the audit log. Daemon and MCP server run unprivileged as user services.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Roadmap -->
+    <section id="roadmap" class="container section">
+      <h2 class="section-title">Roadmap</h2>
+      <p class="section-sub">Milestones 1–3 are done. Everything builds on the same daemon + D-Bus + MCP spine.</p>
+      <ol class="timeline">
+        <li>
+          <span class="ms done">M1</span>
+          <div>
+            <h4>MVP — end-to-end answer on screen</h4>
+            <p>Daemon skeleton, D-Bus <code>Ask</code>, MCP server with read-only system tools, Claude API backend, minimal overlay window.</p>
+          </div>
+        </li>
+        <li>
+          <span class="ms done">M2</span>
+          <div>
+            <h4>Local models + first write actions</h4>
+            <p>Ollama local backend; config-selectable cloud tier — Mistral (default) or Claude; local-first <code>FallbackInferenceBackend</code>; permission-gated clipboard write.</p>
+          </div>
+        </li>
+        <li>
+          <span class="ms done">M3</span>
+          <div>
+            <h4>Personal context + notification intelligence</h4>
+            <p>Embeddings index (SQLite/sqlite-vec) over user-approved files; notification capture and digest — summarize, prioritize, answer. Both permission-gated and audit-logged.</p>
+          </div>
+        </li>
+        <li>
+          <span class="ms active">M4</span>
+          <div>
+            <h4>Voice, screen awareness, GNOME polish — <em>in progress</em></h4>
+            <p>Screen awareness (<code>read_screen_text</code> via XDG portal + Tesseract) ✓ — GNOME Shell extension (keyboard summon, cloud badge) ✓ — Voice I/O remaining.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <!-- CTA -->
+    <section class="container section cta-band">
+      <h2>Open source. Apache-2.0. Contributions welcome.</h2>
+      <p>One issue per branch; every PR runs the canonical build + test + format check in CI.</p>
+      <div class="clone-cmd">
+        <code>git clone https://github.com/s3ba-b/veya.git</code>
+        <button type="button" class="copy-btn" data-copy="git clone https://github.com/s3ba-b/veya.git" aria-label="Copy clone command">Copy</button>
+      </div>
+      <p class="muted clone-hint">Build &amp; run instructions live in the repo&rsquo;s README.</p>
+      <a class="btn btn-primary" href="https://github.com/s3ba-b/veya" rel="noopener">Star it on GitHub</a>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <span>Veya — privacy-transparent AI for Linux.</span>
+      <span class="muted">Licensed under Apache-2.0 · Built local-first.</span>
+    </div>
+  </footer>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({ startOnLoad: true, securityLevel: 'strict', flowchart: { useMaxWidth: true } });
+
+    document.querySelectorAll('.copy-btn').forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(btn.dataset.copy);
+          const prev = btn.textContent;
+          btn.textContent = 'Copied';
+          setTimeout(() => { btn.textContent = prev; }, 1500);
+        } catch { /* clipboard unavailable */ }
+      });
+    });
+  </script>
+</body>
+</html>
