@@ -25,6 +25,31 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
+.veya-input-row {
+    spacing: 8px;
+}
+
+.veya-input-row .veya-entry {
+    width: 540px;
+}
+
+.veya-mic-button {
+    border-radius: 8px;
+    padding: 9px;
+    background-color: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    color: #ebebeb;
+}
+
+.veya-mic-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(100, 160, 255, 0.55);
+}
+
+.veya-mic-button:insensitive {
+    opacity: 0.5;
+}
+
 .veya-status-row {
     spacing: 8px;
 }

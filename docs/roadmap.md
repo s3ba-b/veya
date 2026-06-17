@@ -1,8 +1,6 @@
 # Roadmap
 
-Status: pre-alpha. Milestones 1–3 are implemented; Milestone 4 is in progress
-(screen awareness and the GNOME shell extension are done; voice's backend is
-done, a GNOME mic button is the remaining piece).
+Status: pre-alpha. Milestones 1–4 are implemented.
 Milestone 1 was the walking skeleton; everything after it builds on the same
 daemon + D-Bus + MCP spine. Completed milestones below keep their step lists as
 a record of what shipped.
@@ -46,10 +44,10 @@ API with real system data from MCP tools.
 - Notification intelligence: summarize, prioritize, and answer questions about
   desktop notifications.
 
-## Milestone 4 — Voice, screen awareness, GNOME polish — **In progress**
+## Milestone 4 — Voice, screen awareness, GNOME polish — **Done**
 
-- ~~Voice input/output backend: local Whisper STT + espeak-ng TTS via `AskVoice`.~~ **Done** (ADR-0015, #77)
-- GNOME mic button calling `AskVoice`. **(remaining)**
+- Voice input/output: local Whisper STT + espeak-ng TTS via `AskVoice`
+  (ADR-0015, #77), with a GNOME shell extension mic button calling it (#81).
 - ~~Screen awareness (explicitly permission-gated, local-first).~~ **Done** (ADR-0013, #63)
 - ~~GNOME polish: shell extension shim (JavaScript), keyboard summon, theming.~~ **Done** (ADR-0014, #65)
 
