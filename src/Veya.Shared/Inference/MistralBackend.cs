@@ -1,19 +1,18 @@
-using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Veya.Shared.Safety;
 
 namespace Veya.Shared.Inference;
 
 /// <summary>
 /// <see cref="IInferenceBackend"/> backed by Mistral's hosted API ("La
 /// Plateforme", ADR-0008). Maps <see cref="InferenceRequest"/> to Mistral's
-/// OpenAI-compatible <c>/v1/chat/completions</c> JSON and writes one
-/// <c>cloud.request</c> audit event per call — like <see cref="ClaudeBackend"/>,
-/// data leaves the machine, so it is a cloud (not local) event.
+/// OpenAI-compatible <c>/v1/chat/completions</c> JSON. Audit logging is layered
+/// on by <see cref="AuditingInferenceBackend"/>, not by this backend; like
+/// <see cref="ClaudeBackend"/>, data leaves the machine, so it is audited as a
+/// cloud (not local) event.
 /// </summary>
 public sealed class MistralBackend : IInferenceBackend
 {
@@ -26,19 +25,16 @@ public sealed class MistralBackend : IInferenceBackend
 
     private readonly HttpClient _httpClient;
     private readonly IApiKeyProvider _apiKeyProvider;
-    private readonly IAuditLog _auditLog;
     private readonly string _baseUrl;
     private readonly string _model;
 
     /// <param name="httpClient">Transport used to call the Mistral HTTP API. Tests supply a fake handler.</param>
     /// <param name="apiKeyProvider">Supplies the Mistral API key (<c>MISTRAL_API_KEY</c>).</param>
-    /// <param name="auditLog">Receives one <c>cloud.request</c> event per call.</param>
     /// <param name="options">Base URL and model name (ADR-0008).</param>
-    public MistralBackend(HttpClient httpClient, IApiKeyProvider apiKeyProvider, IAuditLog auditLog, MistralOptions options)
+    public MistralBackend(HttpClient httpClient, IApiKeyProvider apiKeyProvider, MistralOptions options)
     {
         _httpClient = httpClient;
         _apiKeyProvider = apiKeyProvider;
-        _auditLog = auditLog;
         _baseUrl = options.BaseUrl.TrimEnd('/');
         _model = options.Model;
     }
@@ -58,7 +54,6 @@ public sealed class MistralBackend : IInferenceBackend
         };
         httpRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 
-        var stopwatch = Stopwatch.StartNew();
         HttpResponseMessage httpResponse;
         try
         {
@@ -70,8 +65,6 @@ public sealed class MistralBackend : IInferenceBackend
                 $"Veya can't reach the Mistral API at {_baseUrl}. Check your network connection.", ex);
         }
 
-        stopwatch.Stop();
-
         if (!httpResponse.IsSuccessStatusCode)
         {
             var body = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -80,10 +73,6 @@ public sealed class MistralBackend : IInferenceBackend
 
         var mistralResponse = await httpResponse.Content.ReadFromJsonAsync<MistralResponse>(SerializerOptions, cancellationToken)
             .ConfigureAwait(false) ?? throw new BackendUnavailableException("Mistral returned an empty response.");
-
-        await _auditLog.WriteAsync(
-            AuditEvent.CloudRequest("mistral", _model, mistralResponse.Usage.PromptTokens, mistralResponse.Usage.CompletionTokens, stopwatch.Elapsed),
-            cancellationToken).ConfigureAwait(false);
 
         return ToInferenceResponse(mistralResponse);
     }

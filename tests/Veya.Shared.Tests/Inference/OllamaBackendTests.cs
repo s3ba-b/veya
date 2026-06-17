@@ -3,24 +3,12 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using Veya.Shared.Inference;
-using Veya.Shared.Safety;
 using Xunit;
 
 namespace Veya.Shared.Tests.Inference;
 
 public class OllamaBackendTests
 {
-    private sealed class RecordingAuditLog : IAuditLog
-    {
-        public List<AuditEvent> Events { get; } = [];
-
-        public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default)
-        {
-            Events.Add(auditEvent);
-            return Task.CompletedTask;
-        }
-    }
-
     private sealed class FakeHttpMessageHandler(string responseJson, HttpStatusCode statusCode = HttpStatusCode.OK) : HttpMessageHandler
     {
         public string? LastRequestBody { get; private set; }
@@ -45,11 +33,11 @@ public class OllamaBackendTests
             throw new HttpRequestException("Connection refused");
     }
 
-    private static OllamaBackend CreateBackend(HttpMessageHandler handler, IAuditLog? auditLog = null, string model = "llama3.1") =>
-        new(new HttpClient(handler), auditLog ?? new RecordingAuditLog(), new OllamaOptions { Model = model });
+    private static OllamaBackend CreateBackend(HttpMessageHandler handler, string model = "llama3.1") =>
+        new(new HttpClient(handler), new OllamaOptions { Model = model });
 
     [Fact]
-    public async Task CompleteAsync_MapsTextResponseAndWritesLocalRequestAuditEvent()
+    public async Task CompleteAsync_MapsTextResponse()
     {
         const string responseJson = """
         {
@@ -63,8 +51,7 @@ public class OllamaBackendTests
         }
         """;
 
-        var auditLog = new RecordingAuditLog();
-        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson), auditLog);
+        var backend = CreateBackend(new FakeHttpMessageHandler(responseJson));
 
         var request = new InferenceRequest(
             SystemPrompt: "You are Veya.",
@@ -78,15 +65,6 @@ public class OllamaBackendTests
         Assert.Equal("Hello there.", Assert.IsType<TextBlock>(response.Message.Content[0]).Text);
         Assert.Equal(12, response.InputTokens);
         Assert.Equal(7, response.OutputTokens);
-
-        var auditEvent = Assert.Single(auditLog.Events);
-        Assert.Equal("local.request", auditEvent.EventType);
-        var allowedKeys = new[] { "backend", "model", "inputTokens", "outputTokens", "durationMs" };
-        Assert.Equal(allowedKeys.Length, auditEvent.Fields.Count);
-        Assert.Equal("ollama", auditEvent.Fields["backend"]);
-        Assert.Equal("llama3.1", auditEvent.Fields["model"]);
-        Assert.Equal(12, auditEvent.Fields["inputTokens"]);
-        Assert.Equal(7, auditEvent.Fields["outputTokens"]);
     }
 
     [Fact]

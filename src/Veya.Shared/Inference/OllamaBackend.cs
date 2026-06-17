@@ -1,19 +1,16 @@
-using System.Diagnostics;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Veya.Shared.Safety;
 
 namespace Veya.Shared.Inference;
 
 /// <summary>
 /// <see cref="IInferenceBackend"/> backed by a local Ollama server
 /// (ADR-0004, docs/architecture.md "Model router"). Maps
-/// <see cref="InferenceRequest"/> to Ollama's <c>/api/chat</c> JSON and writes
-/// one <c>local.request</c> audit event per call. Unlike
-/// <see cref="ClaudeBackend"/>'s <c>cloud.request</c> events, nothing here
-/// leaves the machine.
+/// <see cref="InferenceRequest"/> to Ollama's <c>/api/chat</c> JSON. Audit
+/// logging is layered on by <see cref="AuditingInferenceBackend"/>, not by this
+/// backend; nothing here leaves the machine.
 /// </summary>
 public sealed class OllamaBackend : IInferenceBackend
 {
@@ -23,17 +20,14 @@ public sealed class OllamaBackend : IInferenceBackend
     };
 
     private readonly HttpClient _httpClient;
-    private readonly IAuditLog _auditLog;
     private readonly string _baseUrl;
     private readonly string _model;
 
     /// <param name="httpClient">Transport used to call the Ollama HTTP API. Tests supply a fake handler.</param>
-    /// <param name="auditLog">Receives one <c>local.request</c> event per call.</param>
     /// <param name="options">Base URL and model name (ADR-0004).</param>
-    public OllamaBackend(HttpClient httpClient, IAuditLog auditLog, OllamaOptions options)
+    public OllamaBackend(HttpClient httpClient, OllamaOptions options)
     {
         _httpClient = httpClient;
-        _auditLog = auditLog;
         _baseUrl = options.BaseUrl.TrimEnd('/');
         _model = options.Model;
     }
@@ -42,7 +36,6 @@ public sealed class OllamaBackend : IInferenceBackend
     {
         var payload = ToOllamaRequest(request, _model);
 
-        var stopwatch = Stopwatch.StartNew();
         HttpResponseMessage httpResponse;
         try
         {
@@ -55,8 +48,6 @@ public sealed class OllamaBackend : IInferenceBackend
                 $"Veya can't reach the local model backend (Ollama) at {_baseUrl}. Make sure Ollama is running.", ex);
         }
 
-        stopwatch.Stop();
-
         if (!httpResponse.IsSuccessStatusCode)
         {
             var body = await httpResponse.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
@@ -65,10 +56,6 @@ public sealed class OllamaBackend : IInferenceBackend
 
         var ollamaResponse = await httpResponse.Content.ReadFromJsonAsync<OllamaResponse>(SerializerOptions, cancellationToken)
             .ConfigureAwait(false) ?? throw new BackendUnavailableException("Ollama returned an empty response.");
-
-        await _auditLog.WriteAsync(
-            AuditEvent.LocalRequest("ollama", _model, ollamaResponse.PromptEvalCount, ollamaResponse.EvalCount, stopwatch.Elapsed),
-            cancellationToken).ConfigureAwait(false);
 
         return ToInferenceResponse(ollamaResponse);
     }

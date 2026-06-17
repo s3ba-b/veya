@@ -1,39 +1,34 @@
-using System.Diagnostics;
 using System.Net.Http;
 using System.Text.Json;
 using Anthropic;
 using Anthropic.Core;
 using Anthropic.Models.Messages;
-using Veya.Shared.Safety;
 
 namespace Veya.Shared.Inference;
 
 /// <summary>
 /// <see cref="IInferenceBackend"/> backed by the Anthropic Claude API
 /// (docs/architecture.md, "Model router"). Maps <see cref="InferenceRequest"/>
-/// to the Anthropic SDK's messages-create call and writes one
-/// <c>cloud.request</c> audit event per call, with no message content.
+/// to the Anthropic SDK's messages-create call. Audit logging is layered on by
+/// <see cref="AuditingInferenceBackend"/>, not by this backend.
 /// </summary>
 public sealed class ClaudeBackend : IInferenceBackend
 {
     private const long DefaultMaxTokens = 4096;
 
     private readonly IApiKeyProvider _apiKeyProvider;
-    private readonly IAuditLog _auditLog;
     private readonly string _model;
     private readonly HttpClient? _httpClient;
 
     /// <param name="apiKeyProvider">Supplies the Anthropic API key.</param>
-    /// <param name="auditLog">Receives one <c>cloud.request</c> event per call.</param>
     /// <param name="model">The Claude model name, e.g. <c>"claude-sonnet-4-6"</c>.</param>
     /// <param name="httpClient">
     /// Optional transport override for the underlying <see cref="AnthropicClient"/>,
     /// used by tests to avoid real network access.
     /// </param>
-    public ClaudeBackend(IApiKeyProvider apiKeyProvider, IAuditLog auditLog, string model, HttpClient? httpClient = null)
+    public ClaudeBackend(IApiKeyProvider apiKeyProvider, string model, HttpClient? httpClient = null)
     {
         _apiKeyProvider = apiKeyProvider;
-        _auditLog = auditLog;
         _model = model;
         _httpClient = httpClient;
     }
@@ -55,13 +50,7 @@ public sealed class ClaudeBackend : IInferenceBackend
         var client = new AnthropicClient(options);
         var parameters = ToMessageCreateParams(request, _model);
 
-        var stopwatch = Stopwatch.StartNew();
         var message = await client.Messages.Create(parameters, cancellationToken).ConfigureAwait(false);
-        stopwatch.Stop();
-
-        await _auditLog.WriteAsync(
-            AuditEvent.CloudRequest("claude", _model, (int)message.Usage.InputTokens, (int)message.Usage.OutputTokens, stopwatch.Elapsed),
-            cancellationToken).ConfigureAwait(false);
 
         return ToInferenceResponse(message);
     }
