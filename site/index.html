@@ -46,7 +46,7 @@
   <main id="top">
     <!-- Hero -->
     <section class="hero container">
-      <span class="pill">M1–M3 done · M4 in progress · open source</span>
+      <span class="pill">M1–M4 done · open source</span>
       <h1>The AI assistant for Linux that <span class="grad">never hides</span> what leaves your machine.</h1>
       <p class="lede">
         Ask anything about your Linux system and get answers grounded in real data —
@@ -130,7 +130,7 @@
           <p>
             One daemon, one D-Bus contract (<code>org.veya.Veya1</code>), any
             number of frontends — GTK4 overlay window, GNOME Shell extension
-            (keyboard summon), CLI, or your own client.
+            (keyboard summon, mic button), CLI, or your own client.
           </p>
         </article>
       </div>
@@ -166,7 +166,7 @@ config:
 flowchart TD
     subgraph FE[Frontends]
         UI["Overlay UI\nGTK4 / Gir.Core"]
-        GS["GNOME Shell ext\nGJS · keyboard summon"]
+        GS["GNOME Shell ext\nGJS · keyboard summon · mic"]
         CLI[CLI]
     end
 
@@ -175,9 +175,11 @@ flowchart TD
         Router["model router · FallbackInferenceBackend"]
         Ctx["personal context index\nSQLite + sqlite-vec · local embeddings"]
         Notif["notification intelligence\ncapture · digest · answer"]
+        Voice["voice I/O · AskVoice\nWhisper STT · espeak-ng TTS · local"]
         DCore --> Router
         DCore --- Ctx
         DCore --- Notif
+        DCore --- Voice
     end
 
     FE -->|"D-Bus · org.veya.Veya1"| D
@@ -218,7 +220,7 @@ flowchart TD
     <!-- Roadmap -->
     <section id="roadmap" class="container section">
       <h2 class="section-title">Roadmap</h2>
-      <p class="section-sub">Milestones 1–3 are done. Everything builds on the same daemon + D-Bus + MCP spine.</p>
+      <p class="section-sub">Milestones 1–4 are done. Everything builds on the same daemon + D-Bus + MCP spine.</p>
       <ol class="timeline">
         <li>
           <span class="ms done">M1</span>
@@ -242,13 +244,14 @@ flowchart TD
           </div>
         </li>
         <li>
-          <span class="ms active">M4</span>
+          <span class="ms done">M4</span>
           <div>
-            <h4>Voice, screen awareness, GNOME polish — <em>in progress</em></h4>
-            <p>Screen awareness (<code>read_screen_text</code> via XDG portal + Tesseract) ✓ — GNOME Shell extension (keyboard summon, cloud badge) ✓ — Voice I/O remaining.</p>
+            <h4>Voice, screen awareness, GNOME polish</h4>
+            <p>Screen awareness (<code>read_screen_text</code> via XDG portal + Tesseract) ✓ — GNOME Shell extension (keyboard summon, cloud badge, mic button) ✓ — Voice I/O (local Whisper STT + espeak-ng TTS via <code>AskVoice</code>) ✓.</p>
           </div>
         </li>
       </ol>
+      <p class="section-sub roadmap-next">Next: privileged write actions through polkit (ADR-0003), so Veya can act on the system — not just read it — without ever assuming root.</p>
     </section>
 
     <!-- CTA -->

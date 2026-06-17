@@ -2,10 +2,10 @@
 
 **An open-source, privacy-transparent, system-wide AI assistant for Ubuntu/Linux.**
 
-> Status: **pre-alpha** — Milestones 1–3 are implemented (daemon, MCP tools,
+> Status: **pre-alpha** — Milestones 1–4 are implemented (daemon, MCP tools,
 > local + cloud inference, clipboard writes, personal context, notification
-> intelligence); Milestone 4 (voice, screen awareness, GNOME shell extension) is
-> in progress. Expect rough edges.
+> intelligence, screen awareness, voice I/O, GNOME shell extension). Expect
+> rough edges.
 
 Veya is an Apple Intelligence alternative for the Linux desktop. The core idea: a
 central **intelligence daemon** that any UI can talk to over **D-Bus**, with an
@@ -53,10 +53,10 @@ Privileged actions will go through polkit later. Details in
 
 ## Roadmap
 
-See [docs/roadmap.md](docs/roadmap.md). Milestones 1–3 are implemented — daemon,
+See [docs/roadmap.md](docs/roadmap.md). Milestones 1–4 are implemented — daemon,
 D-Bus `Ask`, MCP read-only tools, local + cloud inference, clipboard writes,
-personal context index, and notification intelligence. Milestone 4 (voice,
-screen awareness, GNOME shell extension) is in progress.
+personal context index, notification intelligence, screen awareness, voice I/O,
+and the GNOME shell extension.
 
 ## Website
 
