@@ -29,7 +29,7 @@ and point the Daemon at it:
 
 ```sh
 dotnet build src/Veya.McpServer
-export Mcp__ServerPath=$(pwd)/src/Veya.McpServer/bin/Debug/net9.0/Veya.McpServer
+export Mcp__ServerPath=$(pwd)/src/Veya.McpServer/bin/Debug/net10.0/Veya.McpServer
 dotnet run --project src/Veya.Daemon
 ```
 

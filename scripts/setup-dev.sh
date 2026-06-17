@@ -9,11 +9,11 @@ UBUNTU_VERSION=$(lsb_release -rs)
 echo "Veya dev setup — this will use sudo for 'apt-get install' below."
 echo "Detected: Ubuntu ${UBUNTU_VERSION} ${ARCH}"
 
-# ---- .NET SDK (>= 9.0; RollForward=Major in Directory.Build.props allows .NET 10+) ----
+# ---- .NET SDK (>= 10.0; RollForward=Major in Directory.Build.props allows later majors) ----
 NEED_DOTNET=true
 if command -v dotnet &>/dev/null; then
     DOTNET_MAJOR=$(dotnet --version | cut -d. -f1)
-    if [[ "$DOTNET_MAJOR" -ge 9 ]]; then
+    if [[ "$DOTNET_MAJOR" -ge 10 ]]; then
         echo ".NET SDK $(dotnet --version) already installed — skipping."
         NEED_DOTNET=false
     fi
@@ -21,7 +21,7 @@ fi
 
 if [[ "$NEED_DOTNET" == true ]]; then
     if [[ "$ARCH" == "arm64" ]]; then
-        # Ubuntu does not ship dotnet-sdk-9.0 for arm64; add Microsoft's apt feed.
+        # Ubuntu does not ship dotnet-sdk-10.0 for arm64; add Microsoft's apt feed.
         # We use the 24.04 channel — the latest known-good arm64 feed; it is
         # forward-compatible with newer Ubuntu releases.
         echo "ARM64: adding Microsoft package feed (24.04 channel)..."
@@ -32,7 +32,7 @@ https://packages.microsoft.com/ubuntu/24.04/prod noble main" \
             | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
         sudo apt-get update
     fi
-    sudo apt-get install -y dotnet-sdk-9.0
+    sudo apt-get install -y dotnet-sdk-10.0
 fi
 
 # ---- Other apt packages ----

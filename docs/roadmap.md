@@ -10,7 +10,7 @@ a record of what shipped.
 Goal: a question typed into a minimal overlay window gets answered by the Claude
 API with real system data from MCP tools.
 
-1. **Scaffolding + CI** — .NET 9 solution with Daemon, McpServer, Shared (+ test
+1. **Scaffolding + CI** — .NET 10 solution with Daemon, McpServer, Shared (+ test
    projects); `./scripts/verify.sh` green in GitHub Actions.
 2. **Daemon skeleton** — Generic Host + systemd integration
    (`Microsoft.Extensions.Hosting.Systemd`), runs as a user service.
