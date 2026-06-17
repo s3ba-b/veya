@@ -1,0 +1,30 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(~/.microsoft/usersecrets/**)",
+      "Read(**/secrets.json)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command' | { read -r cmd; if echo \"$cmd\" | grep -qiE 'usersecrets|secrets\\.json|\\.env\\b'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Blocked: command references a credentials file (usersecrets/secrets.json/.env). Ask the user explicitly before touching credential files.\"}}'; fi; }"
+          }
+        ]
+      },
+      {
+        "matcher": "Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path' | { read -r f; if echo \"$f\" | grep -qiE 'usersecrets|secrets\\.json|\\.env$'; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"deny\",\"permissionDecisionReason\":\"Blocked: this is a credentials file (usersecrets/secrets.json/.env). Ask the user explicitly before reading credential files.\"}}'; fi; }"
+          }
+        ]
+      }
+    ]
+  }
+}
