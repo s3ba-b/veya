@@ -1,0 +1,21 @@
+{
+  "name": "Veya (headless .NET 10)",
+  "image": "mcr.microsoft.com/dotnet/sdk:10.0",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {}
+  },
+  "onCreateCommand": "./scripts/setup-dev.sh ci",
+  "postCreateCommand": "dotnet restore Veya.sln",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csdevkit",
+        "editorconfig.editorconfig"
+      ],
+      "settings": {
+        "dotnet.defaultSolution": "Veya.sln"
+      }
+    }
+  },
+  "remoteUser": "vscode"
+}

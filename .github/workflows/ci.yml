@@ -16,10 +16,11 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Install GTK4/libadwaita runtime libraries
-        # Veya.Overlay's Gir.Core bindings resolve these at runtime; no
-        # display server is needed to build and unit-test (ADR-0002).
-        run: sudo apt-get update && sudo apt-get install -y libgtk-4-1 libadwaita-1-0
+      - name: Install native build/test dependencies
+        # Single source of truth for native deps; the ci profile installs only
+        # the GTK4/libadwaita runtime libs Gir.Core resolves at runtime (no
+        # display server needed, ADR-0002) and assumes the SDK set up above.
+        run: ./scripts/setup-dev.sh ci
 
       - name: Verify (build + test + format check)
         run: ./scripts/verify.sh

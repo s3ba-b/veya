@@ -26,6 +26,12 @@ expect churn. The conventions below apply to everyone, human and AI agents alike
 See [docs/running.md](docs/running.md) to run the daemon, including as a systemd
 user service.
 
+Prefer not to install locally? Open this repo in **GitHub Codespaces** (or any
+devcontainer-compatible editor) — `.devcontainer/devcontainer.json` gives you
+a .NET 10 environment that mirrors CI and can build/test Daemon, McpServer, and
+Shared. It's headless, so it can't run the GNOME extension, Overlay UI, or
+anything needing a display server or D-Bus session bus.
+
 ## Before you open a PR
 
 Run the single canonical check — CI runs exactly this script, so if it passes
