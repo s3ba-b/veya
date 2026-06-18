@@ -54,6 +54,15 @@ It runs, in order: dependency license scan, `dotnet format` (verify-only),
   The license scan (`scripts/license-scan.sh`) enforces this; if a legitimate
   dependency can't be auto-resolved, add its package id to
   `scripts/license-allowlist.txt` with a comment recording the reviewed license.
+- **Coverage report:** `verify.sh` collects coverage into `./coverage`; run
+  `./scripts/coverage-report.sh` afterwards for a human-readable summary
+  (`coverage/report/index.html` for the line-by-line view). There's no global
+  coverage floor enforced in CI — the codebase mixes thoroughly-unit-testable
+  logic with thin bindings that need a real desktop/display/D-Bus session and
+  are deliberately excluded (hard rule #3); a single repo-wide percentage would
+  either be too lax or penalize those documented exclusions. When you touch a
+  file, check its coverage didn't regress and that genuinely new logic (not
+  composition roots or hardware/display bindings) has tests.
 
 ## Security and privacy (please read)
 

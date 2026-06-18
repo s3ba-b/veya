@@ -11,6 +11,17 @@ public class ServiceStatusToolTests
         public Task WriteAsync(AuditEvent auditEvent, CancellationToken cancellationToken = default) => Task.CompletedTask;
     }
 
+    private sealed class FakeExecutor(string standardOutput) : ISafeExecutor
+    {
+        public ExecRequest? LastRequest { get; private set; }
+
+        public Task<ExecResult> RunAsync(ExecRequest request, CancellationToken cancellationToken = default)
+        {
+            LastRequest = request;
+            return Task.FromResult(new ExecResult(0, standardOutput, string.Empty, TimeSpan.Zero, false, false, false));
+        }
+    }
+
     private const string PropertyArgument = "--property=ActiveState,SubState,UnitFileState,LoadState";
 
     [Fact]
@@ -70,5 +81,24 @@ public class ServiceStatusToolTests
         var tool = new ServiceStatusTool(executor);
 
         await Assert.ThrowsAsync<ArgumentException>(() => tool.GetServiceStatusAsync(unit));
+    }
+
+    [Fact]
+    public async Task GetServiceStatusAsync_RunsSystemctlShowAndReturnsParsedStatus()
+    {
+        var executor = new FakeExecutor("loaded\nactive\nrunning\nstatic\n");
+        var tool = new ServiceStatusTool(executor);
+
+        var status = await tool.GetServiceStatusAsync("ssh-agent.service");
+
+        Assert.Equal("ssh-agent.service", status.Unit);
+        Assert.Equal("loaded", status.LoadState);
+        Assert.Equal("active", status.ActiveState);
+        Assert.Equal("running", status.SubState);
+        Assert.Equal("static", status.UnitFileState);
+
+        Assert.Equal("get_service_status", executor.LastRequest!.Tool);
+        Assert.Equal("systemctl", executor.LastRequest.Binary);
+        Assert.Equal(["--user", "show", "ssh-agent.service", PropertyArgument, "--value"], executor.LastRequest.Arguments);
     }
 }
