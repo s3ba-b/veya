@@ -3,4 +3,9 @@ Copyright 2026 Sebastian Bobrowski
 
 This product includes software developed by the Veya project contributors.
 
-Licensed under the Apache License, Version 2.0 (see LICENSE).
+Licensed under the GNU Affero General Public License, version 3 or later
+(see LICENSE).
+
+Portions of this project were distributed under the Apache License, Version 2.0
+prior to the relicensing recorded in docs/decisions/0017-license-agpl-and-cla.md;
+those released versions remain available under Apache-2.0.

@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Dependency license scan — a precaution against pulling in third-party code
-# whose license is incompatible with Veya's Apache-2.0 distribution.
+# whose license is incompatible with Veya's AGPL-3.0 distribution. We require
+# dependencies to be permissive (MIT/BSD/Apache-2.0/etc.) so they impose no
+# obligations of their own on top of the project's license; the scan rejects
+# copyleft or unknown-licensed transitive dependencies.
 #
 # What it does: enumerates every restored NuGet package (direct + transitive)
 # for the solution, reads each package's declared license from its .nuspec in
@@ -24,7 +27,8 @@ sln="${1:-Veya.sln}"
 nuget_root="${NUGET_PACKAGES:-$HOME/.nuget/packages}"
 exceptions_file="scripts/license-allowlist.txt"
 
-# SPDX expressions we accept without review. All permissive / Apache-compatible.
+# SPDX expressions we accept without review. All permissive and compatible with
+# the project's AGPL-3.0 license.
 ALLOWED_SPDX=" MIT Apache-2.0 BSD-2-Clause BSD-3-Clause 0BSD ISC MS-PL MS-NET-Library Unlicense WTFPL Zlib "
 
 # licenseUrl values that map to a known-good license (older packages predate

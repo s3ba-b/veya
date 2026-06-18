@@ -50,7 +50,8 @@ It runs, in order: dependency license scan, `dotnet format` (verify-only),
   suffix. Tests must **not** assume a desktop session — no D-Bus session bus, no
   display server, no GNOME. CI is headless `ubuntu-latest`; abstract such
   dependencies behind interfaces and fake them.
-- **New dependencies** must carry a permissive, Apache-2.0-compatible license.
+- **New dependencies** must carry a permissive license compatible with the
+  project's AGPL-3.0 license (MIT, BSD, Apache-2.0, etc.).
   The license scan (`scripts/license-scan.sh`) enforces this; if a legitimate
   dependency can't be auto-resolved, add its package id to
   `scripts/license-allowlist.txt` with a comment recording the reviewed license.
@@ -87,5 +88,14 @@ It runs, in order: dependency license scan, `dotnet format` (verify-only),
 
 ## License of contributions
 
-By contributing, you agree that your contributions are licensed under the
-[Apache License 2.0](LICENSE), the same license as the project.
+Veya is licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
+
+Before your first contribution can be merged, you must sign the project's
+**Contributor License Agreement** ([CLA.md](CLA.md)). The CLA confirms you have
+the right to contribute your code and grants the project the rights it needs to
+distribute and, if necessary, relicense the project as a whole.
+
+Signing is automated: the **CLA Assistant** bot comments on your first pull
+request with a one-line statement to confirm. Once you've signed, the check
+passes on all your future PRs — you only sign once. PRs cannot be merged until
+the CLA check is green.
