@@ -5,34 +5,19 @@ namespace Veya.McpServer.Tests.Tools;
 
 public class PortalScreenshotResponseTests
 {
-    [Fact]
-    public void TryGetFilePath_NonZeroResponse_ReturnsNull()
+    public static IEnumerable<object[]> InvalidResponses()
     {
-        var results = new Dictionary<string, object> { ["uri"] = "file:///tmp/screenshot.png" };
-
-        Assert.Null(PortalScreenshotResponse.TryGetFilePath(1, results));
+        yield return [1u, new Dictionary<string, object> { ["uri"] = "file:///tmp/screenshot.png" }];
+        yield return [0u, new Dictionary<string, object>()];
+        yield return [0u, new Dictionary<string, object> { ["uri"] = 42 }];
+        yield return [0u, new Dictionary<string, object> { ["uri"] = "https://example.com/screenshot.png" }];
     }
 
-    [Fact]
-    public void TryGetFilePath_MissingUri_ReturnsNull()
+    [Theory]
+    [MemberData(nameof(InvalidResponses))]
+    public void TryGetFilePath_ReturnsNull_ForInvalidResponse(uint responseCode, Dictionary<string, object> results)
     {
-        Assert.Null(PortalScreenshotResponse.TryGetFilePath(0, new Dictionary<string, object>()));
-    }
-
-    [Fact]
-    public void TryGetFilePath_NonStringUri_ReturnsNull()
-    {
-        var results = new Dictionary<string, object> { ["uri"] = 42 };
-
-        Assert.Null(PortalScreenshotResponse.TryGetFilePath(0, results));
-    }
-
-    [Fact]
-    public void TryGetFilePath_NonFileUri_ReturnsNull()
-    {
-        var results = new Dictionary<string, object> { ["uri"] = "https://example.com/screenshot.png" };
-
-        Assert.Null(PortalScreenshotResponse.TryGetFilePath(0, results));
+        Assert.Null(PortalScreenshotResponse.TryGetFilePath(responseCode, results));
     }
 
     [Fact]
