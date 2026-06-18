@@ -116,4 +116,27 @@ public class ScreenToolTests
 
         Assert.Equal("No text was detected on the screen.", result);
     }
+
+    [Fact]
+    public async Task ReadScreenTextAsync_WhenTempFileDeleteFails_StillReturnsResultWithoutThrowing()
+    {
+        // File.Delete on a directory throws UnauthorizedAccessException; used here to
+        // exercise the best-effort cleanup's catch without relying on filesystem permissions.
+        var dirPath = Directory.CreateTempSubdirectory().FullName;
+        try
+        {
+            var capture = new FakeScreenCapture(dirPath);
+            var executor = new FakeExecutor { StandardOutput = "Hello, screen!\n" };
+            var tool = new ScreenTool(capture, executor, new FixedGate(granted: true), new RecordingAuditLog());
+
+            var result = await tool.ReadScreenTextAsync();
+
+            Assert.Equal("Hello, screen!", result);
+            Assert.True(Directory.Exists(dirPath));
+        }
+        finally
+        {
+            Directory.Delete(dirPath);
+        }
+    }
 }
