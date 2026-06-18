@@ -12,27 +12,23 @@ public class PermissionGateTests
         public bool IsGranted(PermissionSource source) => granted;
     }
 
-    [Fact]
-    public async Task CheckAsync_ReturnsTrueWhenStoreGrants()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CheckAsync_ReturnsStoreDecision(bool granted)
     {
-        var gate = new PermissionGate(new FixedStore(granted: true), new RecordingAuditLog());
+        var gate = new PermissionGate(new FixedStore(granted), new RecordingAuditLog());
 
-        Assert.True(await gate.CheckAsync(PermissionSource.Clipboard, "set_clipboard"));
+        Assert.Equal(granted, await gate.CheckAsync(PermissionSource.Clipboard, "set_clipboard"));
     }
 
-    [Fact]
-    public async Task CheckAsync_ReturnsFalseWhenStoreDenies()
-    {
-        var gate = new PermissionGate(new FixedStore(granted: false), new RecordingAuditLog());
-
-        Assert.False(await gate.CheckAsync(PermissionSource.Clipboard, "set_clipboard"));
-    }
-
-    [Fact]
-    public async Task CheckAsync_AuditsGrantedDecision()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CheckAsync_AuditsDecision(bool granted)
     {
         var audit = new RecordingAuditLog();
-        var gate = new PermissionGate(new FixedStore(granted: true), audit);
+        var gate = new PermissionGate(new FixedStore(granted), audit);
 
         await gate.CheckAsync(PermissionSource.Clipboard, "set_clipboard");
 
@@ -40,19 +36,6 @@ public class PermissionGateTests
         Assert.Equal("permission.decision", ev.EventType);
         Assert.Equal("Clipboard", ev.Fields["source"]);
         Assert.Equal("set_clipboard", ev.Fields["requester"]);
-        Assert.Equal(true, ev.Fields["granted"]);
-    }
-
-    [Fact]
-    public async Task CheckAsync_AuditsDeniedDecision()
-    {
-        var audit = new RecordingAuditLog();
-        var gate = new PermissionGate(new FixedStore(granted: false), audit);
-
-        await gate.CheckAsync(PermissionSource.Clipboard, "set_clipboard");
-
-        var ev = Assert.Single(audit.Events);
-        Assert.Equal("permission.decision", ev.EventType);
-        Assert.Equal(false, ev.Fields["granted"]);
+        Assert.Equal(granted, ev.Fields["granted"]);
     }
 }

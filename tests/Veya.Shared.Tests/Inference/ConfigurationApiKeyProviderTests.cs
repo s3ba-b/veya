@@ -34,27 +34,19 @@ public class ConfigurationApiKeyProviderTests
         Assert.False(fallback.WasCalled);
     }
 
-    [Fact]
-    public async Task GetApiKeyAsync_FallsBackWhenConfigKeyMissing()
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    public async Task GetApiKeyAsync_FallsBackWhenConfigValueMissingOrEmpty(string? configValue)
     {
         var fallback = new StubApiKeyProvider("from-env");
-        var provider = new ConfigurationApiKeyProvider(Config(), "Mistral:ApiKey", fallback);
+        var config = configValue is null ? Config() : Config(("Mistral:ApiKey", configValue));
+        var provider = new ConfigurationApiKeyProvider(config, "Mistral:ApiKey", fallback);
 
         var key = await provider.GetApiKeyAsync();
 
         Assert.Equal("from-env", key);
         Assert.True(fallback.WasCalled);
-    }
-
-    [Fact]
-    public async Task GetApiKeyAsync_FallsBackWhenConfigValueEmpty()
-    {
-        var fallback = new StubApiKeyProvider("from-env");
-        var provider = new ConfigurationApiKeyProvider(Config(("Mistral:ApiKey", "")), "Mistral:ApiKey", fallback);
-
-        var key = await provider.GetApiKeyAsync();
-
-        Assert.Equal("from-env", key);
     }
 
     [Fact]
