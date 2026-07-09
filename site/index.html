@@ -24,6 +24,22 @@
 
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
   <link rel="stylesheet" href="styles.css" />
+
+  <!-- Structured data for search engines -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Veya",
+    "url": "https://veya-project.org/",
+    "description": "An open-source, privacy-transparent, system-wide AI assistant for Ubuntu/Linux — local-first, with per-source permissions and a full audit log.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Linux",
+    "license": "https://www.gnu.org/licenses/agpl-3.0.html",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "sameAs": ["https://github.com/s3ba-b/veya"]
+  }
+  </script>
 </head>
 <body>
   <a class="skip-link" href="#top">Skip to content</a>
@@ -119,9 +135,9 @@
           <div class="card-icon">👁️</div>
           <h3>Transparency</h3>
           <p>
-            An audit log records every tool invocation and every byte sent to a
-            cloud backend. Cloud usage is always user-visible, surfaced live over
-            D-Bus.
+            An audit log records every tool invocation and every cloud request —
+            backend, model, token counts, never the content. Cloud usage is
+            always user-visible, surfaced live over D-Bus.
           </p>
         </article>
         <article class="card">
@@ -251,13 +267,13 @@ flowchart TD
           </div>
         </li>
       </ol>
-      <p class="section-sub roadmap-next">Next: privileged write actions through polkit (ADR-0003), so Veya can act on the system — not just read it — without ever assuming root.</p>
+      <p class="section-sub roadmap-next">Next: packaging (Flatpak + .deb) so anyone can install Veya, a second frontend beyond GNOME to prove the D-Bus contract, and privileged write actions through polkit (ADR-0003) — acting on the system, not just reading it, without ever assuming root.</p>
     </section>
 
     <!-- CTA -->
     <section class="container section cta-band">
-      <h2>Open source. Apache-2.0. Contributions welcome.</h2>
-      <p>One issue per branch; every PR runs the canonical build + test + format check in CI.</p>
+      <h2>Open source. AGPL-3.0. Contributions welcome.</h2>
+      <p>One issue per branch; every PR runs the canonical build + test + format check in CI. Contributions are accepted under the same license and require signing the <a href="https://github.com/s3ba-b/veya/blob/main/CLA.md" rel="noopener">CLA</a>.</p>
       <div class="clone-cmd">
         <code>git clone https://github.com/s3ba-b/veya.git</code>
         <button type="button" class="copy-btn" data-copy="git clone https://github.com/s3ba-b/veya.git" aria-label="Copy clone command">Copy</button>
@@ -270,7 +286,7 @@ flowchart TD
   <footer class="site-footer">
     <div class="container footer-inner">
       <span>Veya — privacy-transparent AI for Linux.</span>
-      <span class="muted">Licensed under Apache-2.0 · Built local-first.</span>
+      <span class="muted">Licensed under AGPL-3.0-or-later · Built local-first.</span>
     </div>
   </footer>
   <script type="module">
