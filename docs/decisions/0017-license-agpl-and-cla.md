@@ -1,6 +1,6 @@
 # ADR-0017: Relicense to AGPL-3.0 and require a Contributor License Agreement
 
-- Status: accepted
+- Status: accepted; the CLA decision is superseded by [ADR-0018](0018-replace-cla-with-dco.md) (the AGPL-3.0 relicense stands)
 - Date: 2026-06-18
 
 ## Context
@@ -42,6 +42,10 @@ tractable.
      (`contributor-assistant/github-action`): it comments on first-time
      contributors' PRs and blocks merge via a status check until they sign.
      Signatures are stored in `signatures/version1/cla.json` on `main`.
+
+   > **Superseded by [ADR-0018](0018-replace-cla-with-dco.md).** The CLA was
+   > replaced with a Developer Certificate of Origin (DCO); `cla.yml` and
+   > `CLA.md` were removed. The AGPL-3.0 relicense in decision 1 is unaffected.
 
 ## Consequences
 

@@ -90,12 +90,19 @@ It runs, in order: dependency license scan, `dotnet format` (verify-only),
 
 Veya is licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
 
-Before your first contribution can be merged, you must sign the project's
-**Contributor License Agreement** ([CLA.md](CLA.md)). The CLA confirms you have
-the right to contribute your code and grants the project the rights it needs to
-distribute and, if necessary, relicense the project as a whole.
+Contributions are certified with a **Developer Certificate of Origin**
+([DCO.md](DCO.md)) — a lightweight, per-commit attestation that you have the
+right to submit your work under the project's license. You keep the copyright to
+your contribution; there is no CLA and no copyright assignment.
 
-Signing is automated: the **CLA Assistant** bot comments on your first pull
-request with a one-line statement to confirm. Once you've signed, the check
-passes on all your future PRs — you only sign once. PRs cannot be merged until
-the CLA check is green.
+Sign off every commit by committing with `-s`:
+
+```sh
+git commit -s -m "Your message"
+```
+
+This adds a `Signed-off-by: Your Name <you@example.com>` trailer (using your
+`user.name`/`user.email`). To backfill existing commits, run
+`git rebase --signoff <base>` and force-push. A CI check
+([`.github/workflows/dco.yml`](.github/workflows/dco.yml)) verifies that every
+commit is signed off with an email matching its author.
