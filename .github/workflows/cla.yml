@@ -3,12 +3,12 @@
 # Posts a comment on first-time contributors' pull requests asking them to sign
 # the CLA (see CLA.md) by replying with the sign phrase below, and blocks the PR
 # (status check) until they have. Signatures are recorded in
-# signatures/version1/cla.json on the default branch.
+# signatures/version1/cla.json on the dedicated `cla-signatures` branch.
 #
-# Manual setup required (one-time, by the maintainer):
-#   Create a repository secret named PERSONAL_ACCESS_TOKEN holding a fine-grained
-#   or classic PAT with `repo` (contents read/write) scope. The action uses it to
-#   commit the signatures file. Without it the workflow cannot record signatures.
+# The signature store lives on `cla-signatures` (not `main`) on purpose: `main`
+# is branch-protected, so the action's GITHUB_TOKEN cannot commit to it. An
+# unprotected branch keeps the store writable with the default token — no
+# PERSONAL_ACCESS_TOKEN secret required. Keep `cla-signatures` unprotected.
 #
 # NOTE: pin `uses:` below to the latest release tag or commit SHA of
 #   contributor-assistant/github-action before relying on this in production.
@@ -37,12 +37,13 @@ jobs:
           github.event_name == 'pull_request_target'
         uses: contributor-assistant/github-action@v2.6.1
         env:
+          # GITHUB_TOKEN is enough: signatures are stored on the unprotected
+          # `cla-signatures` branch, so no PERSONAL_ACCESS_TOKEN is needed.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PERSONAL_ACCESS_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         with:
           path-to-signatures: signatures/version1/cla.json
           path-to-document: https://github.com/s3ba-b/veya/blob/main/CLA.md
-          branch: main
+          branch: cla-signatures
           # Maintainer and bots don't need to sign.
           allowlist: s3ba-b,dependabot[bot],github-actions[bot]
           custom-pr-sign-comment: I have read the CLA Document and I hereby sign the CLA

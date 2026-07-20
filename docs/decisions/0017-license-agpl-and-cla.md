@@ -41,7 +41,9 @@ tractable.
    - `.github/workflows/cla.yml` runs the **CLA Assistant** bot
      (`contributor-assistant/github-action`): it comments on first-time
      contributors' PRs and blocks merge via a status check until they sign.
-     Signatures are stored in `signatures/version1/cla.json` on `main`.
+     Signatures are stored in `signatures/version1/cla.json` on the dedicated
+     unprotected `cla-signatures` branch (not `main`, which is branch-protected
+     and therefore not writable by the action's `GITHUB_TOKEN`).
 
 ## Consequences
 
@@ -53,9 +55,11 @@ tractable.
   project as a whole in the future (a DCO only certifies provenance and would
   not grant that right). The trade-off is a slightly higher bar for first-time
   contributors, mitigated by the bot automating the signature.
-- **Manual follow-up:** the bot needs a `PERSONAL_ACCESS_TOKEN` repository
-  secret (contents read/write) to commit the signatures file; the `uses:` ref
-  in the workflow should be pinned to a verified release tag or commit SHA.
+- **No PAT required.** The signature store lives on the unprotected
+  `cla-signatures` branch, so the action's default `GITHUB_TOKEN` (with
+  `contents: write`) can commit signatures without a `PERSONAL_ACCESS_TOKEN`
+  secret. `cla-signatures` must stay unprotected. The `uses:` ref in the
+  workflow should be pinned to a verified release tag or commit SHA.
 - Supersedes the licensing decision in #47.
 - The `LICENSE` text shipped in this change was assembled offline from a
   faithful local copy and is reflowed; it should be replaced with the canonical
