@@ -65,6 +65,11 @@ it. If it passes locally, CI should pass.
 - Tests live in `tests/`, mirroring `src/` project names with a `.Tests` suffix.
 - Local-first privacy is a product pillar: every new context source needs a
   permission gate and audit-log coverage; call this out in PR descriptions.
-- Docs of record: docs/architecture.md (components/data flow),
-  docs/dbus-interfaces.md (D-Bus contract), docs/security.md (privilege model,
-  safety layer), docs/roadmap.md (milestones), docs/decisions/ (ADRs).
+- Docs of record: ROADMAP.md (milestones — source of truth, mirrored as GitHub
+  milestones), CHARTER.md (objectives/scope/risks/licensing), PRIVACY.md
+  (local-first data model), GLOSSARY.md (shared vocabulary), docs/architecture.md
+  (components/data flow), docs/dbus-interfaces.md (D-Bus contract),
+  docs/security.md (privilege model, safety layer), docs/decisions/ (ADRs).
+- Working by milestone: only the current milestone has issues filed against it.
+  When its issues are all closed, break the next milestone down from ROADMAP.md
+  into issues before starting (see ROADMAP.md "How to start the next milestone").
