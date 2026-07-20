@@ -93,5 +93,5 @@ One issue per branch; PRs run `./scripts/verify.sh` in CI. Read
 
 Licensed under the [GNU Affero General Public License v3.0 or later](LICENSE).
 See the [NOTICE](NOTICE) file for attribution. Contributions are accepted under
-the same license and require signing the [Contributor License Agreement](CLA.md)
-— see [CONTRIBUTING.md](CONTRIBUTING.md).
+the same license and require a [Developer Certificate of Origin](DCO.md) sign-off
+(`git commit -s`) — see [CONTRIBUTING.md](CONTRIBUTING.md).
