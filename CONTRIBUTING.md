@@ -13,9 +13,16 @@ expect churn. The conventions below apply to everyone, human and AI agents alike
   [docs/decisions/](docs/decisions/). Don't relitigate a decision in a PR — if a
   decision should change, write a new ADR that supersedes the old one and update
   [docs/architecture.md](docs/architecture.md) and CLAUDE.md to match.
-- **Keep docs of record consistent:** architecture.md (components/data flow),
-  dbus-interfaces.md (D-Bus contract), security.md (privilege model, safety
-  layer), roadmap.md (milestones).
+- **Keep docs of record consistent:** [ROADMAP.md](ROADMAP.md) (milestones —
+  source of truth), [CHARTER.md](CHARTER.md) (objectives/scope/risks),
+  [PRIVACY.md](PRIVACY.md) (local-first data model), [GLOSSARY.md](GLOSSARY.md)
+  (shared vocabulary), architecture.md (components/data flow), dbus-interfaces.md
+  (D-Bus contract), security.md (privilege model, safety layer).
+- **Work by milestone.** Only the current milestone has issues filed against it;
+  when its issues are closed, break the next one down from [ROADMAP.md](ROADMAP.md)
+  into issues first (see its "How to start the next milestone").
+- **Be respectful.** Participation is governed by our
+  [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Development setup
 

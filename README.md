@@ -53,10 +53,22 @@ Privileged actions will go through polkit later. Details in
 
 ## Roadmap
 
-See [docs/roadmap.md](docs/roadmap.md). Milestones 1–4 are implemented — daemon,
-D-Bus `Ask`, MCP read-only tools, local + cloud inference, clipboard writes,
-personal context index, notification intelligence, screen awareness, voice I/O,
-and the GNOME shell extension.
+See [ROADMAP.md](ROADMAP.md) (the milestone source of truth, mirrored as
+[GitHub milestones](https://github.com/s3ba-b/veya/milestones)). Milestones 1–4
+are implemented — daemon, D-Bus `Ask`, MCP read-only tools, local + cloud
+inference, clipboard writes, personal context index, notification intelligence,
+screen awareness, voice I/O, and the GNOME shell extension. M5–M7 (privileged
+actions via polkit + runtime permission UX, local-model parity/offline, and
+hardening + first release) are planned.
+
+## Project docs
+
+- [CHARTER.md](CHARTER.md) — objectives, scope, stakeholders, risks, licensing.
+- [ROADMAP.md](ROADMAP.md) — milestones and their definitions of done.
+- [PRIVACY.md](PRIVACY.md) — the local-first data model: what leaves your machine,
+  and the permission/audit controls that enforce it.
+- [GLOSSARY.md](GLOSSARY.md) — shared vocabulary (daemon, MCP, safety layer, …).
+- [docs/architecture.md](docs/architecture.md) · [docs/security.md](docs/security.md) · [docs/decisions/](docs/decisions/) (ADRs).
 
 ## Website
 
