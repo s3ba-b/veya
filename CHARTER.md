@@ -61,7 +61,7 @@ system's requirements.
 |---|---|---|
 | Desktop user | Human, direct | Primary user and **data controller** of their own machine; grants context sources, sees cloud usage. |
 | Frontend authors | Human, direct | Build UIs against the D-Bus contract (overlay, shell extension, CLI, third-party); depend on its stability. |
-| Project author / contributors | Human, direct | Build and maintain Veya; bound by AGPL + CLA. |
+| Project author / contributors | Human, direct | Build and maintain Veya; bound by AGPL + DCO. |
 | Cloud inference providers (Anthropic, Mistral) | Inanimate, indirect | Invoked only on cloud fallback; their APIs, models, and terms constrain that path ([ADR-0008](docs/decisions/0008-mistral-cloud-backend.md)). |
 | GNOME / Ubuntu platform (D-Bus, systemd, XDG portals, GTK4, GJS) | Inanimate, direct | Their APIs and release cadence constrain structure and integration ([ADR-0002](docs/decisions/0002-ui-toolkit-gircore.md), [ADR-0014](docs/decisions/0014-gnome-shell-extension.md)). |
 | polkit | Inanimate, direct (future) | The sole sanctioned path for privileged actions ([ADR-0003](docs/decisions/0003-privilege-model-polkit.md)). |
@@ -139,15 +139,16 @@ drift; the arc at a glance:
 ## Licensing strategy
 
 Licensing keeps Veya freely usable while preventing any party from capturing it into
-a closed product. See [ADR-0017](docs/decisions/0017-license-agpl-and-cla.md).
+a closed product. See [ADR-0017](docs/decisions/0017-license-agpl-and-cla.md) and
+[ADR-0018](docs/decisions/0018-replace-cla-with-dco.md).
 
 - **License: AGPL-3.0-or-later.** Strong copyleft with the network-use clause: anyone
   may use, self-host, and modify Veya, but anyone who offers it as a network service
   must publish their complete corresponding source (§13). This removes the incentive
   to fork-and-close.
-- **Contributor License Agreement (CLA).** Every contributor signs once (via the CLA
-  Assistant bot) so copyright stays consolidated enough to enforce — and, if ever
-  needed, relicense — the project as a whole. See [CLA.md](CLA.md).
+- **Developer Certificate of Origin (DCO).** Contributors certify provenance per
+  commit with a `Signed-off-by:` trailer (`git commit -s`) — no copyright assignment,
+  no unilateral relicensing. See [DCO.md](DCO.md) and ADR-0018.
 - **Name / identity.** The project name and identity ("Veya") are protected
   separately from the code; a code license does not authorize passing a fork off as
   the official project.

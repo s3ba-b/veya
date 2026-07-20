@@ -48,7 +48,7 @@ understood terms aren't listed.
 | **Milestone** | A working, demoable slice of the system defined by a "definition of done", not a calendar date. See [ROADMAP.md](ROADMAP.md). |
 | **`verify.sh`** | The single canonical build + test + format + license check (`./scripts/verify.sh`); CI runs exactly it. |
 | **AGPL-3.0** | The project license; running Veya as a network service obliges the operator to offer the complete corresponding source to its users (§13). See [LICENSE](LICENSE). |
-| **CLA / DCO** | The Contributor License Agreement ([CLA.md](CLA.md)) every contributor signs once (via the CLA Assistant bot) before a first merge. |
+| **DCO** | The Developer Certificate of Origin ([DCO.md](DCO.md)) — contributors certify provenance per commit with a `Signed-off-by:` trailer (`git commit -s`); no copyright assignment. |
 
 ---
 
